@@ -1,7 +1,7 @@
 CC=clang
 CFLAGS=-std=c99 -Wall -fPIC
 
-.PHONY=all clean
+.PHONY=all clean test
 
 TARGET=libspecc.so
 
@@ -12,3 +12,6 @@ $(TARGET): specc.c specc.h
 
 clean:
 	rm -f $(TARGET)
+
+test: all
+	@./run_test.sh
