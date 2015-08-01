@@ -20,11 +20,30 @@ typedef struct specc_Context_ {
 
 /* describe */
 int specc_init_desc_(specc_Context_ *cxt, const char *target);
-int specc_finish_desc(specc_Context_ *cxt);
+int specc_finish_desc_(specc_Context_ *cxt);
 
-#define describe(target) for ( int specc_desc_done_ = specc_init_desc_(specc_cxt_, target);\
-                               !specc_describe_done_;\
-                               specc_describe_done_ = specc_finish_desc(specc_cxt_) )\
+#define describe(target)\
+  for ( int specc_desc_done_ = specc_init_desc_(specc_cxt_, target);\
+        !specc_desc_done_;\
+        specc_desc_done_ = specc_finish_desc_(specc_cxt_) )
+
+/* it */
+int specc_init_example_(specc_Context_ *cxt, const char *name);
+int specc_finish_example_(specc_Context_ *cxt);
+int specc_setjmp_(specc_Context_ *cxt);
+
+#define it(name)\
+  for ( int specc_signum_, specc_example_done_ = specc_init_example_(specc_cxt_, name);\
+    !specc_example_done_;\
+    specc_example_done_ = specc_finish_example_(specc_cxt_) )\
+    if ( (specc_signum_ = specc_setjmp_(specc_cxt_)) ){\
+      fprintf(stderr, "catch signal %d\n", specc_signum_);\
+    }\
+    else
+
+/* expect */
+void expect_that_body(const char *expr_str, int val);
+#define expect_that(expr) expect_that_body(#expr, expr)
 
 void specc_setup_(specc_Context_ *);
 int specc_teardown_(specc_Context_ *);

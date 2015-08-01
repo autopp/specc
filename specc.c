@@ -18,7 +18,6 @@ static void specc_internal_error(const char *fmt, ...){
   exit(1);
 }
 
-#define INITIAL_DESC_STACK_SIZE 10
 
 int specc_init_desc_(specc_Context_ *cxt, const char *target) {
   if ( cxt->example_name != NULL ) {
@@ -48,11 +47,46 @@ int specc_init_desc_(specc_Context_ *cxt, const char *target) {
   return 0;
 }
 
-int specc_finish_desc(specc_Context_ *cxt) {
+int specc_finish_desc_(specc_Context_ *cxt) {
   cxt->desc_ptr--;
   return 1;
 }
 
+/* it */
+/*
+static sigjmp_buf specc_jmpbuf;
+
+static void specc_signal_hander(int signum) {
+  siglongjmp(specc_jmpbuf, 1);
+}*/
+
+int specc_init_example_(specc_Context_ *cxt, const char *name) {
+  if ( cxt->desc_ptr < 0 ) {
+    fprintf(stderr, "outside of 'describe'\n");
+    exit(1);
+  }
+
+  cxt->example_name = name;
+  return 0;
+}
+
+int specc_finish_example_(specc_Context_ *cxt)
+{
+  cxt->example_name = NULL;
+  return 1;
+}
+
+int specc_setjmp_(specc_Context_ *cxt)
+{
+  return 0;
+}
+
+/* expect */
+void expect_that_body(const char *expr_str, int val) {
+
+}
+
+#define INITIAL_DESC_STACK_SIZE 10
 void specc_setup_(specc_Context_ *cxt){
   // initialize member of cxt
   cxt->desc_stack = calloc(sizeof(struct specc_DescStack_), INITIAL_DESC_STACK_SIZE);
