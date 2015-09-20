@@ -1,30 +1,15 @@
-#include "specc.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <setjmp.h>
 
-#define eprintf(...) (fprintf(stderr, __VA_ARGS__))
-
-static void specc_internal_error(const char *fmt, ...){
-  va_list vargs;
-  fprintf(stderr, "SpecC internal error: ");
-
-  va_start(vargs, fmt);
-  fprintf(stderr, fmt, vargs);
-  va_end(vargs);
-
-  fprintf(stderr, "\n");
-
-  exit(1);
-}
-
+#include "specc.h"
+#include "specc_util.h"
 
 int specc_init_desc(specc_Context *cxt, const char *target) {
   if ( cxt->example_name != NULL ) {
-    fprintf(stderr, "cannot nest 'describe' in 'it'\n");
-    exit(1);
+    specc_internal_error("cannot nest 'describe' in 'it'");
   }
 
   // push desc stack
@@ -73,11 +58,13 @@ int specc_finish_example(specc_Context *cxt)
 sigjmp_buf specc_jmpbuf;
 
 static void specc_signal_hander(int signum) {
+  // jump to the nearst `it' position
   siglongjmp(specc_jmpbuf, signum);
 }
 
 int specc_initjmp(specc_Context *cxt)
 {
+  // signals that specc handling
   static const int HANDLED_SIGS[] = {
     SIGSEGV,
     SIGFPE,
@@ -88,13 +75,12 @@ int specc_initjmp(specc_Context *cxt)
   struct sigaction act;
   int i;
   for ( i = 0; i < NUM_HANDLED_SIGS; i++ ){
-
+    // Set hook signals
     sigemptyset(&act.sa_mask);
     act.sa_handler = specc_signal_hander;
     act.sa_flags = 0 | SA_RESETHAND;
 
     sigaction(HANDLED_SIGS[i], &act, NULL);
-    //sigaction(SIGFPE, &act, NULL);
   }
 
   return 0;
