@@ -8,7 +8,7 @@ void specc_internal_error(const char *fmt, ...){
   fprintf(stderr, "SpecC internal error: ");
 
   va_start(vargs, fmt);
-  fprintf(stderr, fmt, vargs);
+  vfprintf(stderr, fmt, vargs);
   va_end(vargs);
 
   fprintf(stderr, "\n");
@@ -24,7 +24,6 @@ void specc_fprintf_indented(FILE *fp, int level, const char *fmt, ...)
 
   va_list varg;
   va_start(varg, fmt);
-  fprintf(fp, fmt, varg);
+  vfprintf(fp, fmt, varg);
   va_end(varg);
 }
-
