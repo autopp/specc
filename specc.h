@@ -25,7 +25,7 @@ int specc_init_desc(specc_Context *cxt, const char *target);
 int specc_finish_desc(specc_Context *cxt);
 
 #define describe(target)\
-  for ( int specc_desc_done = specc_init_desc(specc_cxt, target);\
+  for (int specc_desc_done = specc_init_desc(specc_cxt, target);\
         !specc_desc_done;\
         specc_desc_done = specc_finish_desc(specc_cxt) )
 
@@ -36,10 +36,10 @@ int specc_initjmp(specc_Context *cxt);
 extern sigjmp_buf specc_jmpbuf;
 
 #define it(name)\
-  for ( int specc_signum, specc_example_done = specc_init_example(specc_cxt, name);\
+  for (int specc_signum, specc_example_done = specc_init_example(specc_cxt, name);\
     !specc_example_done;\
     specc_example_done = specc_finish_example(specc_cxt) )\
-    if ( (specc_signum = (specc_initjmp(specc_cxt), sigsetjmp(specc_jmpbuf, 1))) ){\
+    if ((specc_signum = (specc_initjmp(specc_cxt), sigsetjmp(specc_jmpbuf, 1)))) {\
       fprintf(stderr, "catch signal %d\n", specc_signum);\
     }\
     else

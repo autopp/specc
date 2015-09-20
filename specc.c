@@ -8,22 +8,22 @@
 #include "specc_util.h"
 
 int specc_init_desc(specc_Context *cxt, const char *target) {
-  if ( cxt->example_name != NULL ) {
+  if (cxt->example_name != NULL) {
     specc_internal_error("cannot nest 'describe' in 'it'");
   }
 
   // push desc stack
   cxt->desc_ptr++;
 
-  if ( cxt->desc_ptr >= cxt->desc_size ) {
+  if (cxt->desc_ptr >= cxt->desc_size) {
     // reallocate
     int new_size = cxt->desc_size * 2;
-    if ( new_size <= cxt->desc_size ) {
+    if (new_size <= cxt->desc_size) {
       specc_internal_error("cannnot expand stack of 'describe'");
     }
 
     specc_DescStack *new_stack = realloc(cxt->desc_stack, sizeof(specc_DescStack) * new_size);
-    if ( new_stack == NULL ) {
+    if (new_stack == NULL) {
       specc_internal_error("cannot expand stack of 'describe'");
     }
 
@@ -40,7 +40,7 @@ int specc_finish_desc(specc_Context *cxt) {
 }
 
 int specc_init_example(specc_Context *cxt, const char *name) {
-  if ( cxt->desc_ptr < 0 ) {
+  if (cxt->desc_ptr < 0 ) {
     fprintf(stderr, "outside of 'describe'\n");
     exit(1);
   }
@@ -74,7 +74,7 @@ int specc_initjmp(specc_Context *cxt)
 
   struct sigaction act;
   int i;
-  for ( i = 0; i < NUM_HANDLED_SIGS; i++ ){
+  for (i = 0; i < NUM_HANDLED_SIGS; i++) {
     // Set hook signals
     sigemptyset(&act.sa_mask);
     act.sa_handler = specc_signal_hander;
@@ -98,7 +98,7 @@ void specc_setup(specc_Context *cxt){
   cxt->desc_ptr = -1;
   cxt->desc_size = INITIAL_DESC_STACK_SIZE;
 
-  if ( cxt->desc_stack == NULL ) {
+  if (cxt->desc_stack == NULL ) {
     specc_internal_error("cannot allocate memory");
   }
 
