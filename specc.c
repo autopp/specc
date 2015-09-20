@@ -30,6 +30,7 @@ int specc_init_desc(specc_Context *cxt, const char *target) {
     cxt->desc_stack = new_stack;
   }
   cxt->desc_stack[cxt->desc_ptr].target = target;
+  specc_printfln_indented(cxt->desc_ptr, "%s", target);
 
   return 0;
 }
@@ -46,6 +47,8 @@ int specc_init_example(specc_Context *cxt, const char *name) {
   }
 
   cxt->example_name = name;
+  specc_printfln_indented(cxt->desc_ptr + 1, "%s", name);
+
   return 0;
 }
 
@@ -83,11 +86,11 @@ int specc_initjmp(specc_Context *cxt)
     sigaction(HANDLED_SIGS[i], &act, NULL);
   }
 
-  return 0;
+  return 1;
 }
 
 /* expect */
-void expect_that_body(const char *expr_str, int val) {
+void expect_that_body(specc_Context *cxt, const char *expr_str, int val) {
 
 }
 

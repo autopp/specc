@@ -39,14 +39,14 @@ extern sigjmp_buf specc_jmpbuf;
   for (int specc_signum, specc_example_done = specc_init_example(specc_cxt, name);\
     !specc_example_done;\
     specc_example_done = specc_finish_example(specc_cxt) )\
-    if ((specc_signum = (specc_initjmp(specc_cxt), sigsetjmp(specc_jmpbuf, 1)))) {\
+    if (specc_initjmp(specc_cxt) && (specc_signum = sigsetjmp(specc_jmpbuf, 1))) {\
       fprintf(stderr, "catch signal %d\n", specc_signum);\
     }\
     else
 
 /* expect */
-void expect_that_body(const char *expr_str, int val);
-#define expect_that(expr) expect_that_body(#expr, expr)
+void expect_that_body(specc_Context *cxt, const char *expr_str, int val);
+#define expect_that(expr) expect_that_body(specc_cxt, #expr, expr)
 
 void specc_setup(specc_Context *);
 int specc_teardown(specc_Context *);
