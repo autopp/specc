@@ -13,7 +13,8 @@ typedef enum specc_Color {
   specc_RED,
   specc_GREEN,
   specc_YELLOW,
-  specc_BLUE
+  specc_BLUE,
+  specc_CYAN
 } specc_Color;
 
 /**

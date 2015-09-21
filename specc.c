@@ -259,11 +259,25 @@ void specc_setup(specc_Context *cxt){
 }
 
 int specc_teardown(specc_Context *cxt){
-  int i = 0;
+  int i;
 
+  // output detail of pending
+  if (cxt->pending_count > 0) {
+    putchar('\n');
+    specc_printfln("Pending: (Failures listed here are expected and do not affect your suite's status)");
+  }
+
+  for (i = 0; i < cxt->pending_count; i++) {
+    specc_Pending *p = cxt->pendings + i;
+    specc_printfln_indented(1, "%d) %s", i + 1, p->full_name);
+    specc_cprintfln_indented(specc_CYAN, 2, "# %s", p->reason);
+    specc_cprintfln_indented(specc_YELLOW, 2, "Failure/Error: %s", p->msg);
+  }
+
+  // output detail of failures
   if (cxt->failure_count > 0) {
     putchar('\n');
-    specc_printfln_indented(0, "Failures:");
+    specc_printfln("Failures:");
   }
 
   for (i = 0; i < cxt->failure_count; i++) {
@@ -271,22 +285,26 @@ int specc_teardown(specc_Context *cxt){
     putchar('\n');
     switch (failure->type) {
     case specc_FAILURE_ERROR:
-      specc_printfln_indented(1, "%d) %s", i + 1, cxt->failures[i].full_name);
-      specc_cprintfln_indented(specc_RED, 2, "Failure/Error: %s", cxt->failures[i].msg);
+      specc_printfln_indented(1, "%d) %s", i + 1, failure->full_name);
+      specc_cprintfln_indented(specc_RED, 2, "Failure/Error: %s", failure->msg);
       break;
     case specc_FAILURE_FIXED:
-      specc_printfln_indented(1, "%d) %s FIXED", i + 1, cxt->failures[i].full_name);
-      specc_cprintfln_indented(specc_BLUE, 2, "%s", cxt->failures[i].msg);
+      specc_printfln_indented(1, "%d) %s FIXED", i + 1, failure->full_name);
+      specc_cprintfln_indented(specc_BLUE, 2, "%s", failure->msg);
       break;
     default:
       specc_internal_error("unknown failure type %d", failure->type);
     }
-
   }
 
   specc_printfln("");
-  int color = cxt->failure_count == 0 ? specc_GREEN : specc_RED;
-  specc_cprintfln(color, "%d examples, %d failures", cxt->example_count, cxt->failure_count);
+  int color = cxt->failure_count > 0 ? specc_RED : (cxt->pending_count > 0 ? specc_YELLOW : specc_GREEN);
+
+  if (cxt->pending_count > 0) {
+    specc_cprintfln(color, "%d examples, %d failures, %d pending", cxt->example_count, cxt->failure_count, cxt->pending_count);
+  } else {
+    specc_cprintfln(color, "%d examples, %d failures", cxt->example_count, cxt->failure_count);
+  }
 
   return cxt->failure_count != 0;
 }
