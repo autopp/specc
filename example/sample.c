@@ -14,6 +14,9 @@ int echo(int x){
   return x;
 }
 
+/**
+ * This test code contains 4 examples, and 3 examples should fail.
+ */
 specc_main {
   describe("inc"){
     describe("with 41"){
@@ -21,21 +24,16 @@ specc_main {
         expect_that(inc(41) == 42);
       }
 
-      it("returns 42"){
+      it("returns 40"){
         expect_that(inc(41) == 41);
       }
 
-      it("returns 42"){
-        expect_that(inc(41) == 43);
-      }
-
-
-      it("raise FPE"){
+      it("raise SIGFPE"){
         int x = 10 / get_n();
         fprintf(stderr, "x = %d\n", 100 / echo(0));
       }
 
-      it("raise SEGV"){
+      it("raise SIGSEGV"){
         int *x = NULL;
         *x = 100;
       }
