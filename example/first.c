@@ -21,6 +21,15 @@ specc_main {
         expect_that(inc(41) == 42);
       }
 
+      it("returns 42"){
+        expect_that(inc(41) == 41);
+      }
+
+      it("returns 42"){
+        expect_that(inc(41) == 43);
+      }
+
+
       it("raise FPE"){
         int x = 10 / get_n();
         fprintf(stderr, "x = %d\n", 100 / echo(0));

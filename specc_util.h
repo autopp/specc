@@ -15,7 +15,8 @@ void specc_internal_error(const char *fmt, ...);
 void specc_fprintf_indented(FILE *fp, int level, const char *fmt, ...);
 
 #define specc_printf_indented(level, ...) specc_fprintf_indented(stdout, level, __VA_ARGS__)
-#define specc_eprintf_indented(level, ...) specc_fprintf_indented(stderr, level, __VA_ARGS__)
+
+#define specc_printf(...) specc_printf_indented(0, __VA_ARGS__)
 
 #define specc_fprintfln_indented(fp, level, ...)\
   do {\
@@ -26,8 +27,7 @@ void specc_fprintf_indented(FILE *fp, int level, const char *fmt, ...);
 #define specc_printfln_indented(level, ...)\
   specc_fprintfln_indented(stdout, level, __VA_ARGS__)
 
-#define specc_eprintfln_indented(level, ...)\
-  specc_fprintfln_indented(stdout, level, __VA_ARGS__)
-
+#define specc_printfln(...) \
+  specc_printfln_indented(0, __VA_ARGS__)
 
 #endif

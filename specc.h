@@ -5,13 +5,24 @@
 
 typedef struct specc_DescStack {
   const char *target;
+  int target_len;
 } specc_DescStack;
+
+typedef struct specc_Failure {
+  const char *position;
+  const char *msg;
+} specc_Failure;
 
 typedef struct specc_Context {
   specc_DescStack *desc_stack;
   int desc_ptr;
   int desc_size;
   const char *example_name;
+  int example_len;
+  specc_Failure *failures;
+  int example_count;
+  int failures_size;
+  int failure_count;
 } specc_Context;
 
 #ifndef SPECC_CONTXT_NAME
