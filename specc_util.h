@@ -2,33 +2,53 @@
 #define SPECC_UTIL_H_
 
 #include <stdio.h>
+#include <unistd.h>
 
 #define SPECC_INDENT "  "
 
 void specc_internal_error(const char *fmt, ...);
+
+typedef enum specc_Color {
+  specc_DEFAULT_COLOR,
+  specc_RED,
+  specc_GREEN
+} specc_Color;
 
 /**
  * format print for stdout with specifieid indent
  * @param level indenet level
  * @param fmt   printf style format string
  */
-void specc_fprintf_indented(FILE *fp, int level, const char *fmt, ...);
+void specc_fcprintf_indented(FILE *fp, specc_Color color, int level, const char *fmt, ...);
 
-#define specc_printf_indented(level, ...) specc_fprintf_indented(stdout, level, __VA_ARGS__)
+#define specc_fcprintfln_indented(fp, color, level, ...)\
+  do {\
+    specc_fcprintf_indented((fp), (color), (level), __VA_ARGS__);\
+    fprintf((fp), "\n");\
+  } while (0)
+
+#define specc_cprintf_indented(color, level, ...)\
+  specc_fcprintf_indented(stdout, (color), (level), __VA_ARGS__)
+
+#define specc_cprintfln_indented(color, level, ...)\
+  specc_fcprintfln_indented(stdout, (color), (level), __VA_ARGS__)
+
+#define specc_printf_indented(level, ...)\
+  specc_cprintf_indented(specc_DEFAULT_COLOR, level, __VA_ARGS__)
+
+#define specc_printfln_indented(level, ...)\
+  specc_cprintfln_indented(specc_DEFAULT_COLOR, level, __VA_ARGS__)
 
 #define specc_printf(...) specc_printf_indented(0, __VA_ARGS__)
 
-#define specc_fprintfln_indented(fp, level, ...)\
-  do {\
-    specc_fprintf_indented(fp, level, __VA_ARGS__);\
-    fprintf(fp, "\n");\
-  } while (0)
-
-#define specc_printfln_indented(level, ...)\
-  specc_fprintfln_indented(stdout, level, __VA_ARGS__)
-
-#define specc_printfln(...) \
+#define specc_printfln(...)\
   specc_printfln_indented(0, __VA_ARGS__)
+
+#define specc_cprintf(color, ...)\
+  specc_cprintf_indented((color), 0, __VA_ARGS__)
+
+#define specc_cprintfln(color, ...)\
+  specc_cprintfln_indented((color), 0, __VA_ARGS__)
 
 /**
  * allocate and format string

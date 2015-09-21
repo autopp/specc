@@ -37,8 +37,6 @@ specc_main {
         int *x = NULL;
         *x = 100;
       }
-
     }
   }
-
 }

@@ -16,15 +16,29 @@ void specc_internal_error(const char *fmt, ...) {
   exit(1);
 }
 
-void specc_fprintf_indented(FILE *fp, int level, const char *fmt, ...) {
+static const char *COLOR_ESC_CODES[] = {
+  "\x1b[39m",
+  "\x1b[31m",
+  "\x1b[32m"
+};
+
+void specc_fcprintf_indented(FILE *fp, specc_Color color, int level, const char *fmt, ...) {
   while (level-- > 0) {
     fprintf(fp, SPECC_INDENT);
+  }
+
+  if (isatty(fileno(fp))) {
+    fprintf(fp, "%s", COLOR_ESC_CODES[color]);
   }
 
   va_list varg;
   va_start(varg, fmt);
   vfprintf(fp, fmt, varg);
   va_end(varg);
+
+  if (isatty(fileno(fp))) {
+    fprintf(fp, "%s", COLOR_ESC_CODES[specc_DEFAULT_COLOR]);
+  }
 }
 
 char *specc_saprintf(const char *fmt, ...) {
