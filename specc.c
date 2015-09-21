@@ -8,6 +8,8 @@
 #include "specc.h"
 #include "specc_util.h"
 
+static void specc_add_failure(specc_Context *cxt, specc_FailureType type, const char *msg);
+
 int specc_init_desc(specc_Context *cxt, const char *target) {
   if (cxt->example != NULL) {
     specc_internal_error("cannot nest 'describe' in 'it'");
@@ -52,6 +54,7 @@ int specc_init_example(specc_Context *cxt, const char *name) {
   cxt->example = name;
   cxt->example_len = strlen(name);
   cxt->example_count += 1;
+  cxt->pending_reason = NULL;
 
   return 0;
 }
@@ -59,11 +62,23 @@ int specc_init_example(specc_Context *cxt, const char *name) {
 int specc_finish_example(specc_Context *cxt)
 {
   if (cxt->example_failed) {
-    specc_cprintfln_indented(specc_RED, cxt->desc_ptr + 1, "%s (FAILED - %d)", cxt->example, cxt->failure_count);
+    if (cxt->pending_reason != NULL) {
+      specc_cprintfln_indented(specc_YELLOW, cxt->desc_ptr + 1, "%s (PENDING: %s)", cxt->example, cxt->pending_reason);
+    } else {
+      specc_cprintfln_indented(specc_RED, cxt->desc_ptr + 1, "%s (FAILED - %d)", cxt->example, cxt->failure_count);
+    }
   } else {
-    specc_cprintfln_indented(specc_GREEN, cxt->desc_ptr + 1, "%s", cxt->example);
+    if (cxt->pending_reason != NULL) {
+      // fixed
+      const char *msg = specc_saprintf("Expected pending `%s' to fail. No Error was raised.", cxt->pending_reason);
+      specc_add_failure(cxt, specc_FAILURE_FIXED, msg);
+      specc_cprintfln_indented(specc_RED, cxt->desc_ptr + 1, "%s (FAILED - %d)", cxt->example, cxt->failure_count);
+    } else {
+      specc_cprintfln_indented(specc_GREEN, cxt->desc_ptr + 1, "%s", cxt->example);
+    }
   }
   cxt->example = NULL;
+  cxt->pending_reason = NULL;
   return 1;
 }
 
@@ -100,27 +115,7 @@ int specc_initjmp(specc_Context *cxt)
 
 #define SIGNUM_TO_NAME(num) ((num) == SIGSEGV ? "SIGSEGV" : ((num) == SIGFPE ? "SIGFPE" : ((num) == SIGPIPE ? "SIGPIPE" : NULL)))
 
-void specc_failure_example(specc_Context *cxt, int signum) {
-  // switch failure flag
-  cxt->example_failed = 1;
-
-  // expand failure logs if needed
-  if (cxt->failure_count == cxt->failures_size) {
-    int new_size = cxt->failures_size * 2;
-    if (new_size <= cxt->failures_size) {
-      specc_internal_error("cannot expand failure logs");
-    }
-
-    specc_Failure *new_failures = realloc(cxt->failures, sizeof(specc_Failure) * new_size);
-
-    if (new_failures == NULL) {
-      specc_internal_error("cannot expand failure logs");
-    }
-
-    cxt->failures = new_failures;
-    cxt->failures_size = new_size;
-  }
-
+static const char *specc_full_example_name(specc_Context *cxt) {
   // Store full name of the failed example
   int i, size = 0;
   for (i = 0; i <= cxt->desc_ptr; i++) {
@@ -138,12 +133,66 @@ void specc_failure_example(specc_Context *cxt, int signum) {
     ptr += sprintf(ptr, "%s ", cxt->desc_stack[i].target);
   }
   sprintf(ptr, "%s", cxt->example);
-  cxt->failures[cxt->failure_count].full_name = full_name;
 
-  // Store the failure message
+  return full_name;
+}
+
+static void specc_add_failure(specc_Context *cxt, specc_FailureType type, const char *msg) {
+  // expand failure logs if needed
+  if (cxt->failure_count == cxt->failures_size) {
+    int new_size = cxt->failures_size * 2;
+    if (new_size <= cxt->failures_size) {
+      specc_internal_error("cannot expand failure logs");
+    }
+
+    specc_Failure *new_failures = realloc(cxt->failures, sizeof(specc_Failure) * new_size);
+
+    if (new_failures == NULL) {
+      specc_internal_error("cannot expand failure logs");
+    }
+
+    cxt->failures = new_failures;
+    cxt->failures_size = new_size;
+  }
+
+  cxt->failures[cxt->failure_count].type = type;
+  cxt->failures[cxt->failure_count].full_name = specc_full_example_name(cxt);
+  cxt->failures[cxt->failure_count].msg = msg;
+  cxt->failure_count++;
+}
+
+static void specc_add_pending(specc_Context *cxt, const char *msg) {
+  // expand pending logs if needed
+  if (cxt->pending_count == cxt->pendings_size) {
+    int new_size = cxt->pendings_size * 2;
+    if (new_size <= cxt->pendings_size) {
+      specc_internal_error("cannot expand pending logs");
+    }
+
+    specc_Pending *new_pendings = realloc(cxt->pendings, sizeof(specc_Pending) * new_size);
+
+    if (new_pendings == NULL) {
+      specc_internal_error("cannot expand pending logs");
+    }
+
+    cxt->pendings = new_pendings;
+    cxt->pendings_size = new_size;
+  }
+
+  cxt->pendings[cxt->pending_count].full_name = specc_full_example_name(cxt);
+  cxt->pendings[cxt->pending_count].msg = msg;
+  cxt->pendings[cxt->pending_count].reason = cxt->pending_reason;
+  cxt->pending_count++;
+}
+
+void specc_failure_example(specc_Context *cxt, int signum) {
+  // switch failure flag
+  cxt->example_failed = 1;
+
+  // Create the failure message
+  const char *msg;
   if (signum > 0) {
     // Signal case
-    char *msg;
     const char *signame = SIGNUM_TO_NAME(signum);
 
     if (signame == NULL) {
@@ -151,12 +200,15 @@ void specc_failure_example(specc_Context *cxt, int signum) {
     } else {
       msg = specc_saprintf("%s raised", signame);
     }
-    cxt->failures[cxt->failure_count].msg = msg;
   } else {
-    cxt->failures[cxt->failure_count].msg = cxt->recent_failure_msg;
+    msg = cxt->recent_failure_msg;
   }
 
-  cxt->failure_count++;
+  if (cxt->pending_reason == NULL) {
+    specc_add_failure(cxt, specc_FAILURE_ERROR, msg);
+  } else {
+    specc_add_pending(cxt, msg);
+  }
 }
 
 /* expect */
@@ -168,8 +220,14 @@ void expect_that_body(specc_Context *cxt, const char *expr_str, int val) {
   }
 }
 
+/* pending */
+void specc_pending(specc_Context *cxt, const char *reason) {
+  cxt->pending_reason = reason;
+}
+
 #define INITIAL_DESC_STACK_SIZE 10
 #define INITIAL_FAILURES_SIZE 10
+#define INITIAL_PENDINGS_SIZE 10
 void specc_setup(specc_Context *cxt){
   // initialize member of cxt
   cxt->desc_stack = calloc(sizeof(struct specc_DescStack), INITIAL_DESC_STACK_SIZE);
@@ -190,6 +248,14 @@ void specc_setup(specc_Context *cxt){
   if (cxt->failures == NULL) {
     specc_internal_error("cannot allocate memory");
   }
+
+  cxt->pendings = calloc(sizeof(struct specc_Pending), INITIAL_PENDINGS_SIZE);
+  cxt->pendings_size = INITIAL_PENDINGS_SIZE;
+  cxt->pending_count = 0;
+
+  if (cxt->pendings == NULL) {
+    specc_internal_error("cannot allocate memory");
+  }
 }
 
 int specc_teardown(specc_Context *cxt){
@@ -201,9 +267,21 @@ int specc_teardown(specc_Context *cxt){
   }
 
   for (i = 0; i < cxt->failure_count; i++) {
+    specc_Failure *failure = cxt->failures + i;
     putchar('\n');
-    specc_printfln_indented(1, "%d) %s", i + 1, cxt->failures[i].full_name);
-    specc_cprintfln_indented(specc_RED, 2, "Failure/Error: %s", cxt->failures[i].msg);
+    switch (failure->type) {
+    case specc_FAILURE_ERROR:
+      specc_printfln_indented(1, "%d) %s", i + 1, cxt->failures[i].full_name);
+      specc_cprintfln_indented(specc_RED, 2, "Failure/Error: %s", cxt->failures[i].msg);
+      break;
+    case specc_FAILURE_FIXED:
+      specc_printfln_indented(1, "%d) %s FIXED", i + 1, cxt->failures[i].full_name);
+      specc_cprintfln_indented(specc_BLUE, 2, "%s", cxt->failures[i].msg);
+      break;
+    default:
+      specc_internal_error("unknown failure type %d", failure->type);
+    }
+
   }
 
   specc_printfln("");

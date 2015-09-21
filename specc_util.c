@@ -19,7 +19,9 @@ void specc_internal_error(const char *fmt, ...) {
 static const char *COLOR_ESC_CODES[] = {
   "\x1b[39m",
   "\x1b[31m",
-  "\x1b[32m"
+  "\x1b[32m",
+  "\x1b[33m",
+  "\x1b[34m"
 };
 
 void specc_fcprintf_indented(FILE *fp, specc_Color color, int level, const char *fmt, ...) {

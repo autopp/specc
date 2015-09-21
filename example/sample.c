@@ -34,6 +34,7 @@ specc_main {
       }
 
       it("raise SIGSEGV"){
+        pending("for SIGSEGV");
         int *x = NULL;
         *x = 100;
       }
@@ -47,6 +48,7 @@ specc_main {
 
   describe("atoi(\"42\")") {
     it ("returns 42") {
+      pending("not implemeted");
       expect_that(atoi("42") == 42);
     }
   }

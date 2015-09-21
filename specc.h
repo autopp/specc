@@ -8,10 +8,22 @@ typedef struct specc_DescStack {
   int target_len;
 } specc_DescStack;
 
+typedef enum specc_FailureType {
+  specc_FAILURE_ERROR,
+  specc_FAILURE_FIXED
+} specc_FailureType;
+
 typedef struct specc_Failure {
+  specc_FailureType type;
   const char *full_name;
   const char *msg;
 } specc_Failure;
+
+typedef struct specc_Pending {
+  const char *full_name;
+  const char *msg;
+  const char *reason;
+} specc_Pending;
 
 typedef struct specc_Context {
   specc_DescStack *desc_stack;
@@ -21,11 +33,18 @@ typedef struct specc_Context {
   const char *example;
   int example_len;
   int example_count;
+
+  // failure logs
   specc_Failure *failures;
   int failures_size;
   int failure_count;
-
   const char *recent_failure_msg;
+
+  // pending logs
+  specc_Pending *pendings;
+  int pendings_size;
+  int pending_count;
+  const char *pending_reason;
 } specc_Context;
 
 #ifndef SPECC_CONTXT_NAME
@@ -77,5 +96,9 @@ int specc_teardown(specc_Context *);
   }\
   \
   void specc_main(specc_Context *specc_cxt)
+
+/* pending */
+void specc_pending(specc_Context *cxt, const char *reason);
+#define pending(reason) (specc_pending(specc_cxt, (reason)))
 
 #endif

@@ -11,7 +11,9 @@ void specc_internal_error(const char *fmt, ...);
 typedef enum specc_Color {
   specc_DEFAULT_COLOR,
   specc_RED,
-  specc_GREEN
+  specc_GREEN,
+  specc_YELLOW,
+  specc_BLUE
 } specc_Color;
 
 /**
