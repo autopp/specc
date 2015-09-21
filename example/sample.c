@@ -38,5 +38,16 @@ specc_main {
         *x = 100;
       }
     }
+    describe("with 42") {
+      it("returns 43") {
+        expect_that(inc(42) == 43);
+      }
+    }
+  }
+
+  describe("atoi(\"42\")") {
+    it ("returns 42") {
+      expect_that(atoi("42") == 42);
+    }
   }
 }

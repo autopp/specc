@@ -17,6 +17,7 @@ typedef struct specc_Context {
   specc_DescStack *desc_stack;
   int desc_ptr;
   int desc_size;
+  int example_failed;
   const char *example;
   int example_len;
   int example_count;

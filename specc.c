@@ -48,16 +48,21 @@ int specc_init_example(specc_Context *cxt, const char *name) {
     specc_internal_error("outside of 'describe'");
   }
 
+  cxt->example_failed = 0;
   cxt->example = name;
   cxt->example_len = strlen(name);
   cxt->example_count += 1;
-  specc_printfln_indented(cxt->desc_ptr + 1, "%s", name);
 
   return 0;
 }
 
 int specc_finish_example(specc_Context *cxt)
 {
+  if (cxt->example_failed) {
+    specc_cprintfln_indented(specc_RED, cxt->desc_ptr + 1, "%s (FAILED - %d)", cxt->example, cxt->failure_count);
+  } else {
+    specc_cprintfln_indented(specc_GREEN, cxt->desc_ptr + 1, "%s", cxt->example);
+  }
   cxt->example = NULL;
   return 1;
 }
@@ -96,6 +101,9 @@ int specc_initjmp(specc_Context *cxt)
 #define SIGNUM_TO_NAME(num) ((num) == SIGSEGV ? "SIGSEGV" : ((num) == SIGFPE ? "SIGFPE" : ((num) == SIGPIPE ? "SIGPIPE" : NULL)))
 
 void specc_failure_example(specc_Context *cxt, int signum) {
+  // switch failure flag
+  cxt->example_failed = 1;
+
   // expand failure logs if needed
   if (cxt->failure_count == cxt->failures_size) {
     int new_size = cxt->failures_size * 2;
@@ -195,11 +203,12 @@ int specc_teardown(specc_Context *cxt){
   for (i = 0; i < cxt->failure_count; i++) {
     putchar('\n');
     specc_printfln_indented(1, "%d) %s", i + 1, cxt->failures[i].full_name);
-    specc_printfln_indented(2, "Failure/Error: %s", cxt->failures[i].msg);
+    specc_cprintfln_indented(specc_RED, 2, "Failure/Error: %s", cxt->failures[i].msg);
   }
 
   specc_printfln("");
-  specc_printfln("%d examples, %d failures", cxt->example_count, cxt->failure_count);
+  int color = cxt->failure_count == 0 ? specc_GREEN : specc_RED;
+  specc_cprintfln(color, "%d examples, %d failures", cxt->example_count, cxt->failure_count);
 
   return cxt->failure_count != 0;
 }
