@@ -30,4 +30,11 @@ void specc_fprintf_indented(FILE *fp, int level, const char *fmt, ...);
 #define specc_printfln(...) \
   specc_printfln_indented(0, __VA_ARGS__)
 
+/**
+ * allocate and format string
+ * @param fmt printf style format string
+ * @return new string
+ */
+char *specc_saprintf(const char *fmt, ...);
+
 #endif

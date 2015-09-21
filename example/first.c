@@ -43,5 +43,4 @@ specc_main {
     }
   }
 
-  printf("done\n");
 }

@@ -9,7 +9,7 @@
 #include "specc_util.h"
 
 int specc_init_desc(specc_Context *cxt, const char *target) {
-  if (cxt->example_name != NULL) {
+  if (cxt->example != NULL) {
     specc_internal_error("cannot nest 'describe' in 'it'");
   }
 
@@ -48,7 +48,7 @@ int specc_init_example(specc_Context *cxt, const char *name) {
     specc_internal_error("outside of 'describe'");
   }
 
-  cxt->example_name = name;
+  cxt->example = name;
   cxt->example_len = strlen(name);
   cxt->example_count += 1;
   specc_printfln_indented(cxt->desc_ptr + 1, "%s", name);
@@ -58,7 +58,7 @@ int specc_init_example(specc_Context *cxt, const char *name) {
 
 int specc_finish_example(specc_Context *cxt)
 {
-  cxt->example_name = NULL;
+  cxt->example = NULL;
   return 1;
 }
 
@@ -93,51 +93,70 @@ int specc_initjmp(specc_Context *cxt)
   return 1;
 }
 
+#define SIGNUM_TO_NAME(num) ((num) == SIGSEGV ? "SIGSEGV" : ((num) == SIGFPE ? "SIGFPE" : ((num) == SIGPIPE ? "SIGPIPE" : NULL)))
+
+void specc_failure_example(specc_Context *cxt, int signum) {
+  // expand failure logs if needed
+  if (cxt->failure_count == cxt->failures_size) {
+    int new_size = cxt->failures_size * 2;
+    if (new_size <= cxt->failures_size) {
+      specc_internal_error("cannot expand failure logs");
+    }
+
+    specc_Failure *new_failures = realloc(cxt->failures, sizeof(specc_Failure) * new_size);
+
+    if (new_failures == NULL) {
+      specc_internal_error("cannot expand failure logs");
+    }
+
+    cxt->failures = new_failures;
+    cxt->failures_size = new_size;
+  }
+
+  // Store full name of the failed example
+  int i, size = 0;
+  for (i = 0; i <= cxt->desc_ptr; i++) {
+    size += cxt->desc_stack[i].target_len + 1;
+  }
+  size += cxt->example_len;
+
+  char *full_name = malloc(sizeof(char) * (size + 1));
+  if (full_name == NULL) {
+    specc_internal_error("cannot allocate memory");
+  }
+
+  char *ptr = full_name;
+  for (i = 0; i <= cxt->desc_ptr; i++) {
+    ptr += sprintf(ptr, "%s ", cxt->desc_stack[i].target);
+  }
+  sprintf(ptr, "%s", cxt->example);
+  cxt->failures[cxt->failure_count].full_name = full_name;
+
+  // Store the failure message
+  if (signum > 0) {
+    // Signal case
+    char *msg;
+    const char *signame = SIGNUM_TO_NAME(signum);
+
+    if (signame == NULL) {
+      msg = specc_saprintf("signal %d raised", signum);
+    } else {
+      msg = specc_saprintf("%s raised", signame);
+    }
+    cxt->failures[cxt->failure_count].msg = msg;
+  } else {
+    cxt->failures[cxt->failure_count].msg = cxt->recent_failure_msg;
+  }
+
+  cxt->failure_count++;
+}
+
 /* expect */
 void expect_that_body(specc_Context *cxt, const char *expr_str, int val) {
   if (!val) {
-    // create error message
-    int i, size = 0;
-    for (i = 0; i <= cxt->desc_ptr; i++) {
-      size += cxt->desc_stack[i].target_len + 1;
-    }
-    size += cxt->example_len;
+    cxt->recent_failure_msg = specc_saprintf("The condition `%s' failed", expr_str);
 
-    char *position = malloc(sizeof(char) * (size + 1));
-    if (position == NULL) {
-      specc_internal_error("cannot allocate memory");
-    }
-
-    char *ptr = position;
-    for (i = 0; i <= cxt->desc_ptr; i++) {
-      ptr += sprintf(ptr, "%s ", cxt->desc_stack[i].target);
-    }
-    sprintf(ptr, "%s", cxt->example_name);
-
-    size = snprintf(NULL, 0, "The condition `%s' failed", expr_str);
-    char *msg = malloc(sizeof(char) * (size + 1));
-    snprintf(msg, size + 1, "The condition `%s' failed", expr_str);
-
-    if (cxt->failure_count == cxt->failures_size) {
-      int new_size = cxt->failures_size * 2;
-      if (new_size <= cxt->failures_size) {
-        specc_internal_error("cannot expand failure logs");
-      }
-
-      specc_Failure *new_failures = realloc(cxt->failures, sizeof(specc_Failure) * new_size);
-
-      if (new_failures == NULL) {
-        specc_internal_error("cannot expand failure logs");
-      }
-
-      cxt->failures = new_failures;
-      cxt->failures_size = new_size;
-    }
-
-    cxt->failures[cxt->failure_count].position = position;
-    cxt->failures[cxt->failure_count].msg = msg;
-
-    cxt->failure_count++;
+    siglongjmp(specc_jmpbuf, -1);
   }
 }
 
@@ -153,7 +172,7 @@ void specc_setup(specc_Context *cxt){
     specc_internal_error("cannot allocate memory");
   }
 
-  cxt->example_name = NULL;
+  cxt->example = NULL;
   cxt->example_count = 0;
 
   cxt->failures = calloc(sizeof(struct specc_Failure), INITIAL_FAILURES_SIZE);
@@ -169,17 +188,18 @@ int specc_teardown(specc_Context *cxt){
   int i = 0;
 
   if (cxt->failure_count > 0) {
+    putchar('\n');
     specc_printfln_indented(0, "Failures:");
   }
 
   for (i = 0; i < cxt->failure_count; i++) {
-    puts("");
-    specc_printfln_indented(1, "%d) %s", i + 1, cxt->failures[i].position);
+    putchar('\n');
+    specc_printfln_indented(1, "%d) %s", i + 1, cxt->failures[i].full_name);
     specc_printfln_indented(2, "Failure/Error: %s", cxt->failures[i].msg);
   }
 
   specc_printfln("");
-  specc_printfln("%d examples, %d falures", cxt->example_count, cxt->failure_count);
+  specc_printfln("%d examples, %d failures", cxt->example_count, cxt->failure_count);
 
   return cxt->failure_count != 0;
 }

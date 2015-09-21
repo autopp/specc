@@ -9,7 +9,7 @@ typedef struct specc_DescStack {
 } specc_DescStack;
 
 typedef struct specc_Failure {
-  const char *position;
+  const char *full_name;
   const char *msg;
 } specc_Failure;
 
@@ -17,12 +17,14 @@ typedef struct specc_Context {
   specc_DescStack *desc_stack;
   int desc_ptr;
   int desc_size;
-  const char *example_name;
+  const char *example;
   int example_len;
-  specc_Failure *failures;
   int example_count;
+  specc_Failure *failures;
   int failures_size;
   int failure_count;
+
+  const char *recent_failure_msg;
 } specc_Context;
 
 #ifndef SPECC_CONTXT_NAME
@@ -43,6 +45,7 @@ int specc_finish_desc(specc_Context *cxt);
 /* it */
 int specc_init_example(specc_Context *cxt, const char *name);
 int specc_finish_example(specc_Context *cxt);
+void specc_failure_example(specc_Context *cxt, int signum);
 int specc_initjmp(specc_Context *cxt);
 extern sigjmp_buf specc_jmpbuf;
 
@@ -51,7 +54,7 @@ extern sigjmp_buf specc_jmpbuf;
     !specc_example_done;\
     specc_example_done = specc_finish_example(specc_cxt) )\
     if (specc_initjmp(specc_cxt) && (specc_signum = sigsetjmp(specc_jmpbuf, 1))) {\
-      fprintf(stderr, "catch signal %d\n", specc_signum);\
+      specc_failure_example(specc_cxt, specc_signum);\
     }\
     else
 
