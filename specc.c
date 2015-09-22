@@ -13,6 +13,8 @@ static const char *specc_full_example_name(specc_Context *cxt);
 static void specc_add_failure(specc_Context *cxt, specc_FailureType type, const char *msg);
 static void specc_add_pending(specc_Context *cxt, const char *msg);
 
+sigjmp_buf specc_jmpbuf;
+
 int specc_init_desc(specc_Context *cxt, const char *target) {
   if (cxt->example != NULL) {
     specc_internal_error("cannot nest 'describe' in 'it'");
@@ -84,8 +86,6 @@ int specc_finish_example(specc_Context *cxt)
   cxt->pending_reason = NULL;
   return 1;
 }
-
-sigjmp_buf specc_jmpbuf;
 
 static void specc_signal_hander(int signum) {
   // jump to the nearst `it' position
