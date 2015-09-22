@@ -212,7 +212,7 @@ void specc_failure_example(specc_Context *cxt, int signum) {
 }
 
 /* expect */
-void expect_that_body(specc_Context *cxt, const char *expr_str, int val) {
+void specc_expect_that(specc_Context *cxt, const char *expr_str, int val) {
   if (!val) {
     cxt->recent_failure_msg = specc_saprintf("The condition `%s' failed", expr_str);
 

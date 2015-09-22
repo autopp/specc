@@ -79,8 +79,8 @@ extern sigjmp_buf specc_jmpbuf;
     else
 
 /* expect */
-void expect_that_body(specc_Context *cxt, const char *expr_str, int val);
-#define expect_that(expr) expect_that_body(specc_cxt, #expr, expr)
+void specc_expect_that(specc_Context *cxt, const char *expr_str, int val);
+#define expect_that(expr) specc_expect_that(specc_cxt, #expr, expr)
 
 void specc_setup(specc_Context *);
 int specc_teardown(specc_Context *);
