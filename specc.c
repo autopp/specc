@@ -12,6 +12,7 @@ static void specc_signal_hander(int signum);
 static const char *specc_full_example_name(specc_Context *cxt);
 static void specc_add_failure(specc_Context *cxt, specc_FailureType type, const char *msg);
 static void specc_add_pending(specc_Context *cxt, const char *msg);
+static void specc_report(specc_Context *cxt);
 
 sigjmp_buf specc_jmpbuf;
 
@@ -257,11 +258,11 @@ void specc_setup(specc_Context *cxt){
   if (cxt->pendings == NULL) {
     specc_internal_error("cannot allocate memory");
   }
+
+  cxt->recent_failure_msg = NULL;
 }
 
-int specc_teardown(specc_Context *cxt){
-  int i;
-
+static void specc_report(specc_Context *cxt) {
   // output detail of pending
   if (cxt->pending_count > 0) {
     specc_newline();
@@ -270,6 +271,7 @@ int specc_teardown(specc_Context *cxt){
   }
 
   int info_indent = 5;
+  int i;
   for (i = 0; i < cxt->pending_count; i++) {
     specc_Pending *p = cxt->pendings + i;
 
@@ -313,7 +315,8 @@ int specc_teardown(specc_Context *cxt){
     }
   }
 
-  specc_printfln("");
+  // output summary
+  specc_newline();
   int color = cxt->failure_count > 0 ? specc_RED : (cxt->pending_count > 0 ? specc_YELLOW : specc_GREEN);
 
   if (cxt->pending_count > 0) {
@@ -321,6 +324,31 @@ int specc_teardown(specc_Context *cxt){
   } else {
     specc_cprintfln(color, "%d examples, %d failures", cxt->example_count, cxt->failure_count);
   }
+}
+
+static void specc_cleanup_context(specc_Context *cxt) {
+  int i;
+
+  free(cxt->desc_stack);
+
+  for (i = 0; i < cxt->failure_count; i++) {
+    specc_Failure *failure = cxt->failures + i;
+    free((char *)failure->full_name);
+    free((char *)failure->msg);
+  }
+  free(cxt->failures);
+
+  for (i = 0; i < cxt->pending_count; i++) {
+    specc_Pending *p = cxt->pendings + i;
+    free((char *)p->full_name);
+    free((char *)p->msg);
+  }
+  free(cxt->pendings);
+}
+
+int specc_teardown(specc_Context *cxt){
+  specc_report(cxt);
+  specc_cleanup_context(cxt);
 
   return cxt->failure_count != 0;
 }
