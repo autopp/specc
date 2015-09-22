@@ -113,7 +113,27 @@ int specc_initjmp(specc_Context *cxt)
   return 1;
 }
 
-#define SIGNUM_TO_NAME(num) ((num) == SIGSEGV ? "SIGSEGV" : ((num) == SIGFPE ? "SIGFPE" : ((num) == SIGPIPE ? "SIGPIPE" : NULL)))
+const char *specc_signal_name(int signum) {
+  static struct specc_SignalInfo {
+    int num;
+    const char *name;
+  } pairs[] = {
+    {SIGSEGV, "SIGSEGV"},
+    {SIGFPE, "SIGFPE"},
+    {SIGPIPE, "SIGPIPE"},
+    {-1, NULL}
+  };
+
+  struct specc_SignalInfo *p;
+
+  for (p = pairs; p->num >= 0; p++) {
+    if (p->num == signum) {
+      return p->name;
+    }
+  }
+
+  return NULL;
+}
 
 static const char *specc_full_example_name(specc_Context *cxt) {
   // Store full name of the failed example
@@ -193,7 +213,7 @@ void specc_failure_example(specc_Context *cxt, int signum) {
   const char *msg;
   if (signum > 0) {
     // Signal case
-    const char *signame = SIGNUM_TO_NAME(signum);
+    const char *signame = specc_signal_name(signum);
 
     if (signame == NULL) {
       msg = specc_saprintf("signal %d raised", signum);
