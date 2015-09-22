@@ -8,7 +8,11 @@
 #include "specc.h"
 #include "specc_util.h"
 
+static void specc_signal_hander(int signum);
+static const char *specc_signal_name(int signum);
+static const char *specc_full_example_name(specc_Context *cxt);
 static void specc_add_failure(specc_Context *cxt, specc_FailureType type, const char *msg);
+static void specc_add_pending(specc_Context *cxt, const char *msg);
 
 int specc_init_desc(specc_Context *cxt, const char *target) {
   if (cxt->example != NULL) {
@@ -113,7 +117,7 @@ int specc_initjmp(specc_Context *cxt)
   return 1;
 }
 
-const char *specc_signal_name(int signum) {
+static const char *specc_signal_name(int signum) {
   static struct specc_SignalInfo {
     int num;
     const char *name;
