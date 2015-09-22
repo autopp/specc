@@ -263,9 +263,9 @@ int specc_teardown(specc_Context *cxt){
 
   // output detail of pending
   if (cxt->pending_count > 0) {
-    putchar('\n');
+    specc_newline();
     specc_printfln("Pending: (Failures listed here are expected and do not affect your suite's status)");
-    putchar('\n');
+    specc_newline();
   }
 
   int info_indent = 5;
@@ -283,7 +283,7 @@ int specc_teardown(specc_Context *cxt){
 
   // output detail of failures
   if (cxt->failure_count > 0) {
-    putchar('\n');
+    specc_newline();
     specc_printfln("Failures:");
   }
 
@@ -295,7 +295,7 @@ int specc_teardown(specc_Context *cxt){
       info_indent++;
     }
 
-    putchar('\n');
+    specc_newline();
     switch (failure->type) {
     case specc_FAILURE_ERROR:
       specc_printfln_indented(2, "%d) %s", i + 1, failure->full_name);

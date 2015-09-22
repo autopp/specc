@@ -47,7 +47,7 @@ void specc_fcprintf_indented(FILE *fp, specc_Color color, int level, const char 
   }
 }
 
-char *specc_saprintf(const char *fmt, ...) {
+const char *specc_saprintf(const char *fmt, ...) {
   va_list varg;
 
   // calculate size of string

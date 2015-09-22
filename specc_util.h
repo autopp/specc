@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
+/**
+ * output formatted error message and exit program
+ * @param fmt printf style format string
+ */
 void specc_internal_error(const char *fmt, ...);
 
 typedef enum specc_Color {
@@ -52,10 +56,15 @@ void specc_fcprintf_indented(FILE *fp, specc_Color color, int level, const char 
   specc_cprintfln_indented((color), 0, __VA_ARGS__)
 
 /**
+ * print newline
+ */
+#define specc_newline() (putchar('\n'))
+
+/**
  * allocate and format string
  * @param fmt printf style format string
  * @return new string
  */
-char *specc_saprintf(const char *fmt, ...);
+const char *specc_saprintf(const char *fmt, ...);
 
 #endif
