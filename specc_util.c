@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <signal.h>
 
 void specc_internal_error(const char *fmt, ...) {
   va_list vargs;
@@ -66,4 +67,26 @@ const char *specc_saprintf(const char *fmt, ...) {
   va_end(varg);
 
   return s;
+}
+
+const char *specc_signal_name(int signum) {
+  static struct specc_SignalInfo {
+    int num;
+    const char *name;
+  } pairs[] = {
+    {SIGSEGV, "SIGSEGV"},
+    {SIGFPE, "SIGFPE"},
+    {SIGPIPE, "SIGPIPE"},
+    {-1, NULL}
+  };
+
+  struct specc_SignalInfo *p;
+
+  for (p = pairs; p->num >= 0; p++) {
+    if (p->num == signum) {
+      return p->name;
+    }
+  }
+
+  return NULL;
 }

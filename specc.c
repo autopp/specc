@@ -9,7 +9,6 @@
 #include "specc_util.h"
 
 static void specc_signal_hander(int signum);
-static const char *specc_signal_name(int signum);
 static const char *specc_full_example_name(specc_Context *cxt);
 static void specc_add_failure(specc_Context *cxt, specc_FailureType type, const char *msg);
 static void specc_add_pending(specc_Context *cxt, const char *msg);
@@ -115,28 +114,6 @@ int specc_initjmp(specc_Context *cxt)
   }
 
   return 1;
-}
-
-static const char *specc_signal_name(int signum) {
-  static struct specc_SignalInfo {
-    int num;
-    const char *name;
-  } pairs[] = {
-    {SIGSEGV, "SIGSEGV"},
-    {SIGFPE, "SIGFPE"},
-    {SIGPIPE, "SIGPIPE"},
-    {-1, NULL}
-  };
-
-  struct specc_SignalInfo *p;
-
-  for (p = pairs; p->num >= 0; p++) {
-    if (p->num == signum) {
-      return p->name;
-    }
-  }
-
-  return NULL;
 }
 
 static const char *specc_full_example_name(specc_Context *cxt) {

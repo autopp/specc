@@ -67,4 +67,6 @@ void specc_fcprintf_indented(FILE *fp, specc_Color color, int level, const char 
  */
 const char *specc_saprintf(const char *fmt, ...);
 
+const char *specc_signal_name(int signum);
+
 #endif
