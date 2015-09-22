@@ -26,10 +26,12 @@ static const char *COLOR_ESC_CODES[] = {
 };
 
 void specc_fcprintf_indented(FILE *fp, specc_Color color, int level, const char *fmt, ...) {
+  // indent
   while (level-- > 0) {
-    fprintf(fp, SPECC_INDENT);
+    fputc(' ', fp);
   }
 
+  // if output stream is tty, change color
   if (isatty(fileno(fp))) {
     fprintf(fp, "%s", COLOR_ESC_CODES[color]);
   }
@@ -39,6 +41,7 @@ void specc_fcprintf_indented(FILE *fp, specc_Color color, int level, const char 
   vfprintf(fp, fmt, varg);
   va_end(varg);
 
+  // if output stream is tty, change back color
   if (isatty(fileno(fp))) {
     fprintf(fp, "%s", COLOR_ESC_CODES[specc_DEFAULT_COLOR]);
   }

@@ -35,7 +35,7 @@ int specc_init_desc(specc_Context *cxt, const char *target) {
   }
   cxt->desc_stack[cxt->desc_ptr].target = target;
   cxt->desc_stack[cxt->desc_ptr].target_len = strlen(target);
-  specc_printfln_indented(cxt->desc_ptr, "%s", target);
+  specc_printfln_indented(cxt->desc_ptr * 2, "%s", target);
 
   return 0;
 }
@@ -63,18 +63,18 @@ int specc_finish_example(specc_Context *cxt)
 {
   if (cxt->example_failed) {
     if (cxt->pending_reason != NULL) {
-      specc_cprintfln_indented(specc_YELLOW, cxt->desc_ptr + 1, "%s (PENDING: %s)", cxt->example, cxt->pending_reason);
+      specc_cprintfln_indented(specc_YELLOW, (cxt->desc_ptr + 1) * 2, "%s (PENDING: %s)", cxt->example, cxt->pending_reason);
     } else {
-      specc_cprintfln_indented(specc_RED, cxt->desc_ptr + 1, "%s (FAILED - %d)", cxt->example, cxt->failure_count);
+      specc_cprintfln_indented(specc_RED, (cxt->desc_ptr + 1) * 2, "%s (FAILED - %d)", cxt->example, cxt->failure_count);
     }
   } else {
     if (cxt->pending_reason != NULL) {
       // fixed
       const char *msg = specc_saprintf("Expected pending `%s' to fail. No Error was raised.", cxt->pending_reason);
       specc_add_failure(cxt, specc_FAILURE_FIXED, msg);
-      specc_cprintfln_indented(specc_RED, cxt->desc_ptr + 1, "%s (FAILED - %d)", cxt->example, cxt->failure_count);
+      specc_cprintfln_indented(specc_RED, (cxt->desc_ptr + 1) * 2, "%s (FAILED - %d)", cxt->example, cxt->failure_count);
     } else {
-      specc_cprintfln_indented(specc_GREEN, cxt->desc_ptr + 1, "%s", cxt->example);
+      specc_cprintfln_indented(specc_GREEN, (cxt->desc_ptr + 1) * 2, "%s", cxt->example);
     }
   }
   cxt->example = NULL;
@@ -265,13 +265,20 @@ int specc_teardown(specc_Context *cxt){
   if (cxt->pending_count > 0) {
     putchar('\n');
     specc_printfln("Pending: (Failures listed here are expected and do not affect your suite's status)");
+    putchar('\n');
   }
 
+  int info_indent = 5;
   for (i = 0; i < cxt->pending_count; i++) {
     specc_Pending *p = cxt->pendings + i;
-    specc_printfln_indented(1, "%d) %s", i + 1, p->full_name);
-    specc_cprintfln_indented(specc_CYAN, 2, "# %s", p->reason);
-    specc_cprintfln_indented(specc_YELLOW, 2, "Failure/Error: %s", p->msg);
+
+    if (i % 10 == 9) {
+      info_indent++;
+    }
+
+    specc_printfln_indented(2, "%d) %s", i + 1, p->full_name);
+    specc_cprintfln_indented(specc_CYAN, info_indent, "# %s", p->reason);
+    specc_cprintfln_indented(specc_YELLOW, info_indent, "Failure/Error: %s", p->msg);
   }
 
   // output detail of failures
@@ -280,18 +287,26 @@ int specc_teardown(specc_Context *cxt){
     specc_printfln("Failures:");
   }
 
+  info_indent = 5;
   for (i = 0; i < cxt->failure_count; i++) {
     specc_Failure *failure = cxt->failures + i;
+
+    if (i % 10 == 9) {
+      info_indent++;
+    }
+
     putchar('\n');
     switch (failure->type) {
     case specc_FAILURE_ERROR:
-      specc_printfln_indented(1, "%d) %s", i + 1, failure->full_name);
-      specc_cprintfln_indented(specc_RED, 2, "Failure/Error: %s", failure->msg);
+      specc_printfln_indented(2, "%d) %s", i + 1, failure->full_name);
+      specc_cprintfln_indented(specc_RED, info_indent, "Failure/Error: %s", failure->msg);
       break;
+
     case specc_FAILURE_FIXED:
-      specc_printfln_indented(1, "%d) %s FIXED", i + 1, failure->full_name);
-      specc_cprintfln_indented(specc_BLUE, 2, "%s", failure->msg);
+      specc_printfln_indented(2, "%d) %s FIXED", i + 1, failure->full_name);
+      specc_cprintfln_indented(specc_BLUE, info_indent, "%s", failure->msg);
       break;
+
     default:
       specc_internal_error("unknown failure type %d", failure->type);
     }

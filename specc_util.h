@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define SPECC_INDENT "  "
-
 void specc_internal_error(const char *fmt, ...);
 
 typedef enum specc_Color {
