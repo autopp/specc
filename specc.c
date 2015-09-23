@@ -242,6 +242,12 @@ void specc_pending(specc_Context *cxt, const char *reason) {
   cxt->pending_reason = reason;
 }
 
+void specc_before(specc_Context *cxt) {
+}
+
+void specc_after(specc_Context *cxt) {
+}
+
 #define INITIAL_DESC_STACK_SIZE 10
 #define INITIAL_FAILURES_SIZE 10
 #define INITIAL_PENDINGS_SIZE 10

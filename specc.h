@@ -5,9 +5,17 @@
 
 #define specc_VERSION "0.1.0"
 
+struct specc_Context;
+typedef struct specc_Context specc_Context;
+
+typedef int (*specc_BeforeFunc)(specc_Context *cxt);
+typedef int (*specc_AfterFunc)(specc_Context *cxt);
+
 typedef struct specc_DescStack {
   const char *target;
   int target_len;
+  specc_BeforeFunc prev_before_func;
+  specc_AfterFunc prev_after_func;
 } specc_DescStack;
 
 typedef enum specc_FailureType {
@@ -29,7 +37,7 @@ typedef struct specc_Pending {
   const char *reason;
 } specc_Pending;
 
-typedef struct specc_Context {
+struct specc_Context {
   specc_DescStack *desc_stack;
   int desc_ptr;
   int desc_size;
@@ -55,7 +63,7 @@ typedef struct specc_Context {
 
   // start time
   double start_time;
-} specc_Context;
+};
 
 #ifndef SPECC_CONTXT_NAME
 #define SPECC_CONTXT_NAME specc_cxt
@@ -92,6 +100,26 @@ extern sigjmp_buf specc_jmpbuf;
 void specc_expect_that(specc_Context *cxt, const char *expr_str, int val, const char *filename, int line);
 #define expect_that(expr) specc_expect_that(specc_cxt, #expr, expr, __FILE__, __LINE__)
 
+/* pending */
+void specc_pending(specc_Context *cxt, const char *reason);
+#define pending(reason) (specc_pending(specc_cxt, (reason)))
+
+/* before */
+#define before\
+  specc_add_before(cxt, specc_before);\
+  void specc_before(specc_Context *cxt)
+
+// Top level dummy `before' (empty)
+void specc_before(specc_Context *cxt);
+
+/* after */
+#define after\
+  specc_add_after(cxt, specc_after);\
+  void specc_after(specc_Context *cxt)
+
+// Top level dummy `after' (empty)
+void specc_after(specc_Context *cxt);
+
 void specc_setup(specc_Context *);
 int specc_teardown(specc_Context *);
 
@@ -106,9 +134,5 @@ int specc_teardown(specc_Context *);
   }\
   \
   void specc_main(specc_Context *specc_cxt)
-
-/* pending */
-void specc_pending(specc_Context *cxt, const char *reason);
-#define pending(reason) (specc_pending(specc_cxt, (reason)))
 
 #endif
