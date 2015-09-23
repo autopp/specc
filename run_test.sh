@@ -7,6 +7,6 @@ for file in $(/bin/ls example/*.c); do
   echo "${file}"
   echo "---------------------------"
 
-  clang -I./ -L./ $file -lspecc -o ${file}.out 2>&1 && env LD_LIBRARY_PATH=$(pwd):${LD_LIBRARY_PATH} ${file}.out 2>&1
+  cc -I./ -L./ $file -lspecc --std=gnu99 -o ${file}.out 2>&1 && env LD_LIBRARY_PATH=$(pwd):${LD_LIBRARY_PATH} ${file}.out 2>&1
   rm -f ${file}.out
 done
