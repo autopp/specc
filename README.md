@@ -212,8 +212,8 @@ Note that failed pending example do not affect exit status.
 * RSpec's `before`/`after`
 
 ## Links
-* RSpec ([](http://rspec.info/)) - Inspired most syntax and feature.
-* Cello ([](http://libcello.org/)) - Many of the implementation technique was here in reference.
+* [RSpec](http://rspec.info/): Inspired most syntax and feature.
+* [Cello](http://libcello.org/): Many of the implementation technique was here in reference.
 
 ## Author
 [@AuToPP](https://twitter.com/AuToPP)
