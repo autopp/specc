@@ -5,19 +5,14 @@ SpecC: RSpec like lightwaight test framework for C99
 ## Install
 
 ```bash
-$ git clone 
+$ git clone https://github.com/autopp/specc.git
 $ cd specc
 $ make      # Create libspecc.so
+$ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(pwd)
 $ make test # Run examples
 ```
 
 When build success, `libspecc.so` should be created.
-
-Please add directory of `libspecc.so` to `LD_LIBRARY_PATH`.
-
-```bash
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/path/to/specc
-```
 
 ## Usage
 
@@ -69,16 +64,17 @@ $ cc -I/path/to/specc -L/path/to/specc --std=gnu99 sample_test.c -o sample_test 
 $ ./sample_test
 ```
 
-You should get output follow as:
+You should get output below:
+
 ![](result.png)
 
 ## TODO
 * More assert functions.
 * Show failure position in example.
-* Command line options for handling behavior.
+* Command line options for handling the behavior of SpecC.
 
 ## Author
 [@AuToPP](https://twitter.com/AuToPP)
 
-## Licence
-[MIT](LICENCE.txt)
+## License
+[MIT](LICENSE.txt)
