@@ -43,9 +43,11 @@ specc_main {
 
   describe ("add()") {
     describe ("with 40 and 2") {
-      // Pending example that should success
-      pending("not implemeted");
-      expect_that(add(40, 2) == 42);
+      it ("returns 42") {
+        // Pending example that should success
+        pending("not implemeted");
+        expect_that(add(40, 2) == 42);
+      }
     }
   }
 }
