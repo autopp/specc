@@ -16,9 +16,9 @@ static void specc_report(specc_Context *cxt);
 
 sigjmp_buf specc_jmpbuf;
 
-int specc_init_desc(specc_Context *cxt, const char *target) {
+int specc_init_desc(specc_Context *cxt, const char *target, const char *filename, int line) {
   if (cxt->example != NULL) {
-    specc_internal_error("cannot nest 'describe' in 'it'");
+    specc_syntax_error(filename, line, "cannot use `describe' in `it'");
   }
 
   // push desc stack
@@ -51,9 +51,9 @@ int specc_finish_desc(specc_Context *cxt) {
   return 1;
 }
 
-int specc_init_example(specc_Context *cxt, const char *name) {
+int specc_init_example(specc_Context *cxt, const char *name, const char *filename, int line) {
   if (cxt->desc_ptr < 0 ) {
-    specc_internal_error("outside of 'describe'");
+    specc_syntax_error(filename, line, "cannot use `it' at outside of `describe'");
   }
 
   cxt->example_failed = 0;
@@ -214,7 +214,11 @@ void specc_failure_example(specc_Context *cxt, int signum) {
 }
 
 /* expect */
-void specc_expect_that(specc_Context *cxt, const char *expr_str, int val) {
+void specc_expect_that(specc_Context *cxt, const char *expr_str, int val, const char *filename, int line) {
+  if (cxt->example == NULL) {
+    specc_syntax_error(filename, line, "cannot use `expect_that` at outside of `it'");
+  }
+
   if (!val) {
     cxt->recent_failure_msg = specc_saprintf("The condition `%s' failed", expr_str);
 
@@ -225,7 +229,7 @@ void specc_expect_that(specc_Context *cxt, const char *expr_str, int val) {
 /* pending */
 void specc_pending(specc_Context *cxt, const char *reason) {
   if (cxt->example == NULL) {
-    specc_internal_error("outside of `it'");
+    specc_internal_error("cannot use `pending' at outside of `it'");
   }
 
   cxt->pending_reason = reason;

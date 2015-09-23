@@ -10,6 +10,8 @@
  */
 void specc_internal_error(const char *fmt, ...);
 
+void specc_syntax_error(const char *filename, int line, const char *fmt, ...);
+
 typedef enum specc_Color {
   specc_DEFAULT_COLOR,
   specc_RED,

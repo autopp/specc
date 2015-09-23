@@ -17,6 +17,20 @@ void specc_internal_error(const char *fmt, ...) {
   exit(1);
 }
 
+void specc_syntax_error(const char *filename, int line, const char *fmt, ...) {
+  va_list vargs;
+
+  specc_fcprintf_indented(stderr, specc_RED, 0, "SpecC Syntax Error at %s:%d: ", filename, line);
+
+  va_start(vargs, fmt);
+  vfprintf(stderr, fmt, vargs);
+  va_end(vargs);
+
+  fprintf(stderr, "\n");
+
+  exit(1);
+}
+
 static const char *COLOR_ESC_CODES[] = {
   "\x1b[39m",
   "\x1b[31m",

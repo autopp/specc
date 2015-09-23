@@ -3,6 +3,8 @@
 
 #include <setjmp.h>
 
+#define specc_VERSION "0.1.0"
+
 typedef struct specc_DescStack {
   const char *target;
   int target_len;
@@ -54,23 +56,23 @@ typedef struct specc_Context {
 #define specc_cxt SPECC_CONTXT_NAME
 
 /* describe */
-int specc_init_desc(specc_Context *cxt, const char *target);
+int specc_init_desc(specc_Context *cxt, const char *target, const char *filename, int line);
 int specc_finish_desc(specc_Context *cxt);
 
 #define describe(target)\
-  for (int specc_desc_done = specc_init_desc(specc_cxt, target);\
+  for (int specc_desc_done = specc_init_desc(specc_cxt, target, __FILE__, __LINE__);\
         !specc_desc_done;\
         specc_desc_done = specc_finish_desc(specc_cxt) )
 
 /* it */
-int specc_init_example(specc_Context *cxt, const char *name);
+int specc_init_example(specc_Context *cxt, const char *name, const char *filename, int line);
 int specc_finish_example(specc_Context *cxt);
 void specc_failure_example(specc_Context *cxt, int signum);
 int specc_initjmp(specc_Context *cxt);
 extern sigjmp_buf specc_jmpbuf;
 
 #define it(name)\
-  for (int specc_signum, specc_example_done = specc_init_example(specc_cxt, name);\
+  for (int specc_signum, specc_example_done = specc_init_example(specc_cxt, name, __FILE__, __LINE__);\
     !specc_example_done;\
     specc_example_done = specc_finish_example(specc_cxt) )\
     if (specc_initjmp(specc_cxt) && (specc_signum = sigsetjmp(specc_jmpbuf, 1))) {\
@@ -79,8 +81,8 @@ extern sigjmp_buf specc_jmpbuf;
     else
 
 /* expect */
-void specc_expect_that(specc_Context *cxt, const char *expr_str, int val);
-#define expect_that(expr) specc_expect_that(specc_cxt, #expr, expr)
+void specc_expect_that(specc_Context *cxt, const char *expr_str, int val, const char *filename, int line);
+#define expect_that(expr) specc_expect_that(specc_cxt, #expr, expr, __FILE__, __LINE__)
 
 void specc_setup(specc_Context *);
 int specc_teardown(specc_Context *);
