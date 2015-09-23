@@ -47,6 +47,9 @@ typedef struct specc_Context {
   int pendings_size;
   int pending_count;
   const char *pending_reason;
+
+  // start time
+  double start_time;
 } specc_Context;
 
 #ifndef SPECC_CONTXT_NAME

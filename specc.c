@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <setjmp.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "specc.h"
 #include "specc_util.h"
@@ -268,9 +269,16 @@ void specc_setup(specc_Context *cxt){
   }
 
   cxt->recent_failure_msg = NULL;
+
+  // mesure start time of test
+  cxt->start_time = specc_get_time();
 }
 
 static void specc_report(specc_Context *cxt) {
+  // mesure end time of test
+  double end_time = specc_get_time();
+  double test_time = end_time - cxt->start_time;
+
   // output detail of pending
   if (cxt->pending_count > 0) {
     specc_newline();
@@ -325,6 +333,8 @@ static void specc_report(specc_Context *cxt) {
 
   // output summary
   specc_newline();
+  specc_printfln("Finished in %g seconds", test_time);
+
   int color = cxt->failure_count > 0 ? specc_RED : (cxt->pending_count > 0 ? specc_YELLOW : specc_GREEN);
 
   if (cxt->pending_count > 0) {

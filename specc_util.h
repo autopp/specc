@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+double specc_get_time();
+
 /**
  * output formatted error message and exit program
  * @param fmt printf style format string

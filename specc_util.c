@@ -1,8 +1,16 @@
-#include "specc_util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <signal.h>
+#include <sys/time.h>
+
+#include "specc_util.h"
+
+double specc_get_time() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_sec + tv.tv_usec * 1e-6;
+}
 
 void specc_internal_error(const char *fmt, ...) {
   va_list vargs;
