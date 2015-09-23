@@ -1,5 +1,4 @@
-CC=clang
-CFLAGS=-Wall -pedantic -Werror -fPIC
+CFLAGS=-Wall -pedantic -Werror -fPIC --std=gnu99
 
 .PHONY=all clean test
 

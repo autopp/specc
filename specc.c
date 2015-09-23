@@ -224,6 +224,10 @@ void specc_expect_that(specc_Context *cxt, const char *expr_str, int val) {
 
 /* pending */
 void specc_pending(specc_Context *cxt, const char *reason) {
+  if (cxt->example == NULL) {
+    specc_internal_error("outside of `it'");
+  }
+
   cxt->pending_reason = reason;
 }
 
