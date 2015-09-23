@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <string.h>
 
+int add(int x, int y) {
+  return x + y;
+}
+
 // There are incomplete functions
 int fact(int n) {
   // fale implemetation
@@ -14,7 +18,7 @@ char *copy_hello(char *s) {
   return s;
 }
 
-// This test code contains 2 examples and all pending
+// This test code contains 3 examples and 2 pending, 1 success
 specc_main {
   describe ("fact()") {
     describe ("with 5") {
@@ -30,6 +34,14 @@ specc_main {
       char s[20];
       pending("now debugging");
       expect_that(strcmp(copy_hello(s), "hello world") == 0);
+    }
+  }
+
+  describe ("add()") {
+    describe ("with 40 and 2") {
+      it ("returns 42") {
+        expect_that(add(40, 2) == 42);
+      }
     }
   }
 }
