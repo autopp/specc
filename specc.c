@@ -63,6 +63,9 @@ int specc_init_example(specc_Context *cxt, const char *name, const char *filenam
   cxt->example_count += 1;
   cxt->pending_reason = NULL;
 
+  cxt->example_filename = filename;
+  cxt->example_line = line;
+
   return 0;
 }
 
@@ -161,6 +164,9 @@ static void specc_add_failure(specc_Context *cxt, specc_FailureType type, const 
   cxt->failures[cxt->failure_count].type = type;
   cxt->failures[cxt->failure_count].full_name = specc_full_example_name(cxt);
   cxt->failures[cxt->failure_count].msg = msg;
+  cxt->failures[cxt->failure_count].filename = cxt->example_filename;
+  cxt->failures[cxt->failure_count].line = cxt->example_line;
+
   cxt->failure_count++;
 }
 
@@ -270,6 +276,8 @@ void specc_setup(specc_Context *cxt){
 
   cxt->recent_failure_msg = NULL;
 
+  specc_newline();
+
   // mesure start time of test
   cxt->start_time = specc_get_time();
 }
@@ -283,7 +291,6 @@ static void specc_report(specc_Context *cxt) {
   if (cxt->pending_count > 0) {
     specc_newline();
     specc_printfln("Pending: (Failures listed here are expected and do not affect your suite's status)");
-    specc_newline();
   }
 
   int info_indent = 5;
@@ -295,6 +302,7 @@ static void specc_report(specc_Context *cxt) {
       info_indent++;
     }
 
+    specc_newline();
     specc_printfln_indented(2, "%d) %s", i + 1, p->full_name);
     specc_cprintfln_indented(specc_CYAN, info_indent, "# %s", p->reason);
     specc_cprintfln_indented(specc_YELLOW, info_indent, "Failure/Error: %s", p->msg);
@@ -342,6 +350,23 @@ static void specc_report(specc_Context *cxt) {
   } else {
     specc_cprintfln(color, "%d examples, %d failures", cxt->example_count, cxt->failure_count);
   }
+
+  // output positions of failed examples
+
+  if (cxt->failure_count > 0) {
+    specc_newline();
+    specc_printfln("Failed examples:");
+    specc_newline();
+
+    for (i = 0; i < cxt->failure_count; i++) {
+      specc_Failure *failure = cxt->failures + i;
+
+      specc_cprintf(specc_RED, "%s:%d ", failure->filename, failure->line);
+      specc_cprintfln(specc_CYAN, "# %s", failure->full_name);
+    }
+  }
+
+  specc_newline();
 }
 
 static void specc_cleanup_context(specc_Context *cxt) {

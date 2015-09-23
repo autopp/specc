@@ -19,6 +19,8 @@ typedef struct specc_Failure {
   specc_FailureType type;
   const char *full_name;
   const char *msg;
+  const char *filename;
+  int line;
 } specc_Failure;
 
 typedef struct specc_Pending {
@@ -31,10 +33,13 @@ typedef struct specc_Context {
   specc_DescStack *desc_stack;
   int desc_ptr;
   int desc_size;
+
   int example_failed;
   const char *example;
   int example_len;
   int example_count;
+  const char *example_filename;
+  int example_line;
 
   // failure logs
   specc_Failure *failures;
