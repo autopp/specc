@@ -8,14 +8,14 @@
 struct specc_Context;
 typedef struct specc_Context specc_Context;
 
-typedef int (*specc_BeforeFunc)(specc_Context *cxt);
-typedef int (*specc_AfterFunc)(specc_Context *cxt);
+typedef void (*specc_BeforeFunc)(specc_Context *cxt);
+typedef void (*specc_AfterFunc)(specc_Context *cxt);
 
 typedef struct specc_DescStack {
   const char *target;
   int target_len;
-  specc_BeforeFunc prev_before_func;
-  specc_AfterFunc prev_after_func;
+  specc_BeforeFunc before_func;
+  specc_AfterFunc after_func;
 } specc_DescStack;
 
 typedef enum specc_FailureType {
@@ -101,24 +101,24 @@ void specc_expect_that(specc_Context *cxt, const char *expr_str, int val, const 
 #define expect_that(expr) specc_expect_that(specc_cxt, #expr, expr, __FILE__, __LINE__)
 
 /* pending */
-void specc_pending(specc_Context *cxt, const char *reason);
-#define pending(reason) (specc_pending(specc_cxt, (reason)))
+void specc_pending(specc_Context *cxt, const char *reason, const char *filename, int line);
+#define pending(reason) (specc_pending(specc_cxt, (reason), __FILE__, __LINE__))
 
 /* before */
+void specc_store_before(specc_Context *cxt, specc_BeforeFunc func, const char *filename, int line);
+
 #define before\
-  specc_add_before(cxt, specc_before);\
+  auto void specc_before(specc_Context *cxt);\
+  specc_store_before(specc_cxt, specc_before, __FILE__, __LINE__);\
   void specc_before(specc_Context *cxt)
 
-// Top level dummy `before' (empty)
-void specc_before(specc_Context *cxt);
-
 /* after */
-#define after\
-  specc_add_after(cxt, specc_after);\
-  void specc_after(specc_Context *cxt)
+void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *filename, int line);
 
-// Top level dummy `after' (empty)
-void specc_after(specc_Context *cxt);
+#define after\
+  auto void specc_after(specc_Context *cxt);\
+  specc_store_after(specc_cxt, specc_after, __FILE__, __LINE__);\
+  void specc_after(specc_Context *cxt)
 
 void specc_setup(specc_Context *);
 int specc_teardown(specc_Context *);
