@@ -1,78 +1,52 @@
 #include <specc.h>
-#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#define STACK_SIZE 20
-int stack[STACK_SIZE] = {0};
-int sp = 0;
+typedef struct {
+  const char *name;
+  int age;
+} *Person;
 
-void push(int x) {
-  stack[sp++] = x;
+Person new_person(const char *name, int age) {
+  Person p = malloc(sizeof(Person));
+
+  p->name = name;
+  p->age = age;
+
+  return p;
 }
 
-void pop() {
-  sp--;
-}
+#define get_person_name(p) ((p)->name)
 
-int peek() {
-  return stack[sp-1];
-}
+#define get_person_age(p) ((p)->age)
 
-int sum_stack() {
-  int r = 0;
-
-  for (int i = 0; i < sp; i++) {
-    r += stack[i];
-  }
-
-  return r;
+void delete_person(Person p) {
+  free(p);
 }
 
 specc_main {
-  describe ("sum_stack()") {
-    describe ("when 1, 2 are on the stack") {
-      before {
-        push(1);
-        push(2);
+  describe ("Person with \"Jhon\" and 42") {
+    Person person;
+
+    before {
+      // This code is executed before each example
+      person = new_person("Jhon", 42);
+    }
+
+    after {
+      // This code is executed after each example
+      delete_person(person);
+    }
+
+    describe ("get_person_name()") {
+      it ("returns \"Jhon\"") {
+        expect_that(strcmp(get_person_name(person), "Jhon") == 0);
       }
+    }
 
-      after {
-        pop();
-        pop();
-      }
-
-      it ("returns 3") {
-        expect_that(sum_stack() == 3);
-      }
-
-      describe ("and 3, 4 are also on the stack") {
-        before {
-          push(3);
-          push(4);
-        }
-
-        after {
-          pop();
-          pop();
-        }
-
-        it ("returns 10") {
-          expect_that(sum_stack() == 10);
-        }
-      }
-      describe ("and 5, 6 are also on the stack") {
-        before {
-          push(5);
-          push(6);
-        }
-
-        after {
-          pop();
-          pop();
-        }
-
-        it ("returns 14") {
-          expect_that(sum_stack() == 14);
-        }
+    describe ("get_person_age()") {
+      it ("returns 42") {
+        expect_that(get_person_age(person) == 42);
       }
     }
   }
