@@ -264,10 +264,6 @@ specc_main {
 }
 ```
 
-You get a output bellow:
-
-![](./result_before_after.png)
-
 `before`/`after`'s code are executed before/after each `it`.
 You get a output bellow:
 
