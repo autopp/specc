@@ -40,8 +40,12 @@ int specc_init_desc(specc_Context *cxt, const char *target, const char *filename
     cxt->desc_stack = new_stack;
     cxt->desc_size = new_size;
   }
+
   cxt->desc_stack[cxt->desc_ptr].target = target;
   cxt->desc_stack[cxt->desc_ptr].target_len = strlen(target);
+  cxt->desc_stack[cxt->desc_ptr].before_func = NULL;
+  cxt->desc_stack[cxt->desc_ptr].after_func = NULL;
+
   specc_printfln_indented(cxt->desc_ptr * 2, "%s", target);
 
   return 0;
@@ -66,11 +70,29 @@ int specc_init_example(specc_Context *cxt, const char *name, const char *filenam
   cxt->example_filename = filename;
   cxt->example_line = line;
 
+  // call all stored `before'
+  for (int i = 0; i <= cxt->desc_ptr; i++) {
+    specc_BeforeFunc func = cxt->desc_stack[i].before_func;
+
+    if (func != NULL) {
+      func(cxt);
+    }
+  }
+
   return 0;
 }
 
 int specc_finish_example(specc_Context *cxt)
 {
+  // call all stored `after'
+  for (int i = cxt->desc_ptr; i >= 0; i--) {
+    specc_AfterFunc func = cxt->desc_stack[i].after_func;
+
+    if (func != NULL) {
+      func(cxt);
+    }
+  }
+
   if (cxt->example_failed) {
     if (cxt->pending_reason != NULL) {
       specc_cprintfln_indented(specc_YELLOW, (cxt->desc_ptr + 1) * 2, "%s (PENDING: %s)", cxt->example, cxt->pending_reason);
@@ -89,6 +111,7 @@ int specc_finish_example(specc_Context *cxt)
   }
   cxt->example = NULL;
   cxt->pending_reason = NULL;
+
   return 1;
 }
 
@@ -234,12 +257,36 @@ void specc_expect_that(specc_Context *cxt, const char *expr_str, int val, const 
 }
 
 /* pending */
-void specc_pending(specc_Context *cxt, const char *reason) {
+void specc_pending(specc_Context *cxt, const char *reason, const char *filename, int line) {
   if (cxt->example == NULL) {
-    specc_internal_error("cannot use `pending' at outside of `it'");
+    specc_internal_error(filename, line, "cannot use `pending' at outside of `it'");
   }
 
   cxt->pending_reason = reason;
+}
+
+void specc_store_before(specc_Context *cxt, specc_BeforeFunc func, const char *filename, int line) {
+  if (cxt->desc_ptr < 0) {
+    specc_syntax_error(filename, line, "cannot use `before' at outside of `deescribe'");
+  }
+
+  if (cxt->example != NULL) {
+    specc_syntax_error(filename, line, "cannot use `before' at inside of `it'");
+  }
+
+  cxt->desc_stack[cxt->desc_ptr].before_func = func;
+}
+
+void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *filename, int line) {
+  if (cxt->desc_ptr < 0) {
+    specc_syntax_error(filename, line, "cannot use `after' at outside of `deescribe'");
+  }
+
+  if (cxt->example != NULL) {
+    specc_syntax_error(filename, line, "cannot use `after' at inside of `it'");
+  }
+
+  cxt->desc_stack[cxt->desc_ptr].after_func = func;
 }
 
 #define INITIAL_DESC_STACK_SIZE 10
