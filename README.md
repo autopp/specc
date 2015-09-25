@@ -24,6 +24,9 @@ $ make test # Run examples
 
 When build success, `libspecc.so` should be created.
 
+SpecC is Tested at Ubuntu 14.04 with GCC 4.8.4.
+The code using SpecC requires GCC because some features depend on The GCC extensions that supported other compilers.
+
 ## Usage
 
 ### Writing
