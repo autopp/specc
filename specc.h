@@ -129,16 +129,16 @@ void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *fil
 void specc_setup(specc_Context *);
 int specc_teardown(specc_Context *);
 
-#define specc_main\
-  void specc_main(specc_Context *specc_cxt);\
+#define specc\
+  void specc(specc_Context *specc_cxt);\
   \
   int main(void) {\
     specc_Context cxt;\
     specc_setup(&cxt);\
-    specc_main(&cxt);\
+    specc(&cxt);\
     return specc_teardown(&cxt);\
   }\
   \
-  void specc_main(specc_Context *specc_cxt)
+  void specc(specc_Context *specc_cxt)
 
 #endif
