@@ -27,7 +27,7 @@ char *copy_hello(char *s) {
  */
 specc_main {
   describe ("fact()") {
-    describe ("with 5") {
+    context ("with 5") {
       it ("returns 120") {
         expect_that(fact(5) == 120);
       }
@@ -42,7 +42,7 @@ specc_main {
   }
 
   describe ("add()") {
-    describe ("with 40 and 2") {
+    context ("with 40 and 2") {
       it ("returns 42") {
         // Pending example that should success
         pending("not implemeted");

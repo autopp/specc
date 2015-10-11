@@ -13,10 +13,6 @@ void pop() {
   sp--;
 }
 
-int peek() {
-  return stack[sp-1];
-}
-
 int sum_stack() {
   int r = 0;
 
@@ -29,7 +25,7 @@ int sum_stack() {
 
 specc_main {
   describe ("sum_stack()") {
-    describe ("when 1, 2 are on the stack") {
+    context ("when 1, 2 are on the stack") {
       before {
         push(1);
         push(2);
@@ -44,7 +40,7 @@ specc_main {
         expect_that(sum_stack() == 3);
       }
 
-      describe ("and 3, 4 are also on the stack") {
+      context ("and 3, 4 are also on the stack") {
         before {
           push(3);
           push(4);
@@ -59,7 +55,7 @@ specc_main {
           expect_that(sum_stack() == 10);
         }
       }
-      describe ("and 5, 6 are also on the stack") {
+      context ("and 5, 6 are also on the stack") {
         before {
           push(5);
           push(6);

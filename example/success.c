@@ -17,14 +17,14 @@ specc_main {
   }
 
   describe ("add()") {
-    describe ("with 222 and 444") {
+    context ("with 222 and 444") {
       it ("returns 666") {
         expect_that(add(222, 444) == 666);
       }
     }
 
     describe ("with 1") {
-      describe ("and 99") {
+      context ("and 99") {
         it ("returns 100") {
           expect_that(add(1, 99) == 100);
         }
