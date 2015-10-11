@@ -25,7 +25,7 @@ $ make test # Run examples
 When build success, `libspecc.so` should be created.
 
 SpecC is Tested at Ubuntu 14.04 with GCC 4.8.4.
-The code using SpecC requires GCC because some features depend on The GCC extensions that supported other compilers.
+The code using SpecC requires GCC because some features depend on The GCC extensions that NOT supported other compilers.
 
 ## Usage
 
@@ -147,7 +147,12 @@ You get a output bellow:
 
 ![](./result_failed.png)
 
-Note that SpecC handle SIGSEGV in the second example.
+Note that SpecC handles SIGSEGV in the second example.
+Currently, SpecC can handle the following signals:
+
+* SIGSEGV
+* SIGPIPE
+* SIGFPE
 
 ### Pending
 
@@ -223,10 +228,10 @@ typedef struct {
 
 Person new_person(const char *name, int age) {
   Person p = malloc(sizeof(Person));
-  
+
   p->name = name;
   p->age = age;
-  
+
   return p;
 }
 
@@ -241,23 +246,23 @@ void delete_person(Person p) {
 specc_main {
   describe ("Person with \"Jhon\" and 42") {
     Person person;
-    
+
     before {
       // This code is executed before each `it'
       person = new_person("Jhon", 42);
     }
-    
+
     after {
       // This code is executed after each `it'
       delete_person(person);
     }
-    
+
     describe ("get_person_name()") {
       it ("returns \"Jhon\"") {
         expect_that(strcmp(get_person_name(person), "Jhon") == 0);
       }
     }
-    
+
     describe ("get_person_age()") {
       it ("returns 42") {
         expect_that(get_person_age(person) == 42);
