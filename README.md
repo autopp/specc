@@ -43,7 +43,7 @@ int add(int x, int y) {
 /**
  * This test code contains 3 examples, and all should success.
  */
-specc_main {
+specc {
   describe ("answer") {
     it ("is 42") {
       expect_that(answer == 42);
@@ -115,7 +115,7 @@ char *copy_hello(char *s) {
 /**
  * This test code contains 2 examples and all should fail
  */
-specc_main {
+specc {
   describe ("fact()") {
     context ("with 5") {
       it ("returns 120") {
@@ -180,7 +180,7 @@ char *copy_hello(char *s) {
 }
 
 // This test code contains 3 examples and 2 pending, 1 success
-specc_main {
+specc {
   describe ("fact()") {
     context ("with 5") {
       it ("returns 120") {
@@ -243,7 +243,7 @@ void delete_person(Person p) {
   free(p);
 }
 
-specc_main {
+specc {
   describe ("Person") {
     context ("with \"Jhon\" and 42") {
       Person person;

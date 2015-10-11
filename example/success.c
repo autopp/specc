@@ -9,7 +9,7 @@ int add(int x, int y) {
 /**
  * This test code contains 3 examples, and all should success.
  */
-specc_main {
+specc {
   describe ("answer") {
     it ("is 42") {
       expect_that(answer == 42);

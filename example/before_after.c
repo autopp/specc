@@ -24,7 +24,7 @@ void delete_person(Person p) {
   free(p);
 }
 
-specc_main {
+specc {
   describe ("Person") {
     context ("with \"Jhon\" and 42") {
       Person person;

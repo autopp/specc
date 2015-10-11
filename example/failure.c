@@ -25,7 +25,7 @@ char *copy_hello(char *s) {
 /**
  * This test code contains 2 examples and all should fail
  */
-specc_main {
+specc {
   describe ("fact()") {
     context ("with 5") {
       it ("returns 120") {

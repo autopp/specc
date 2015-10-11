@@ -23,7 +23,7 @@ int sum_stack() {
   return r;
 }
 
-specc_main {
+specc {
   describe ("sum_stack()") {
     context ("when 1, 2 are on the stack") {
       before {
