@@ -4,7 +4,7 @@ SpecC: RSpec like lightweight test framework for C99
 
 ## Features
 
-* RSpec like syntax (`describe` and `it`)
+* RSpec like syntax (`describe`, `context` and `it`)
 * Pending test with message
 * pre/post-processing of test via `before`/`after`
 * Catch and report a signal such as SIGSEGV
@@ -51,14 +51,14 @@ specc_main {
   }
 
   describe ("add()") {
-    describe ("with 222 and 444") {
+    context ("with 222 and 444") {
       it ("returns 666") {
         expect_that(add(222, 444) == 666);
       }
     }
 
-    describe ("with 1") {
-      describe ("and 99") {
+    context ("with 1") {
+      context ("and 99") {
         it ("returns 100") {
           expect_that(add(1, 99) == 100);
         }
@@ -117,7 +117,7 @@ char *copy_hello(char *s) {
  */
 specc_main {
   describe ("fact()") {
-    describe ("with 5") {
+    context ("with 5") {
       it ("returns 120") {
         expect_that(fact(5) == 120);
       }
@@ -132,7 +132,7 @@ specc_main {
   }
 
   describe ("add()") {
-    describe ("with 40 and 2") {
+    context ("with 40 and 2") {
       it ("returns 42") {
         // Pending example that should success
         pending("not implemeted");
@@ -182,7 +182,7 @@ char *copy_hello(char *s) {
 // This test code contains 3 examples and 2 pending, 1 success
 specc_main {
   describe ("fact()") {
-    describe ("with 5") {
+    context ("with 5") {
       it ("returns 120") {
         pending("not implemeted");
         expect_that(fact(5) == 120);
@@ -199,7 +199,7 @@ specc_main {
   }
 
   describe ("add()") {
-    describe ("with 40 and 2") {
+    context ("with 40 and 2") {
       it ("returns 42") {
         expect_that(add(40, 2) == 42);
       }
@@ -244,28 +244,30 @@ void delete_person(Person p) {
 }
 
 specc_main {
-  describe ("Person with \"Jhon\" and 42") {
-    Person person;
+  describe ("Person") {
+    context ("with \"Jhon\" and 42") {
+      Person person;
 
-    before {
-      // This code is executed before each `it'
-      person = new_person("Jhon", 42);
-    }
-
-    after {
-      // This code is executed after each `it'
-      delete_person(person);
-    }
-
-    describe ("get_person_name()") {
-      it ("returns \"Jhon\"") {
-        expect_that(strcmp(get_person_name(person), "Jhon") == 0);
+      before {
+        // This code is executed before each `it'
+        person = new_person("Jhon", 42);
       }
-    }
 
-    describe ("get_person_age()") {
-      it ("returns 42") {
-        expect_that(get_person_age(person) == 42);
+      after {
+        // This code is executed after each `it'
+        delete_person(person);
+      }
+
+      describe ("get_person_name()") {
+        it ("returns \"Jhon\"") {
+          expect_that(strcmp(get_person_name(person), "Jhon") == 0);
+        }
+      }
+
+      describe ("get_person_age()") {
+        it ("returns 42") {
+          expect_that(get_person_age(person) == 42);
+        }
       }
     }
   }
