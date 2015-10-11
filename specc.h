@@ -71,14 +71,20 @@ struct specc_Context {
 
 #define specc_cxt SPECC_CONTXT_NAME
 
-/* describe */
 int specc_init_desc(specc_Context *cxt, const char *target, const char *filename, int line);
 int specc_finish_desc(specc_Context *cxt);
 
+/* describe */
 #define describe(target)\
   for (int specc_desc_done = specc_init_desc(specc_cxt, target, __FILE__, __LINE__);\
         !specc_desc_done;\
         specc_desc_done = specc_finish_desc(specc_cxt) )
+
+/**
+ * Alias of `describe'
+ * @param  target
+ */
+#define context(target) describe(target)
 
 /* it */
 int specc_init_example(specc_Context *cxt, const char *name, const char *filename, int line);
