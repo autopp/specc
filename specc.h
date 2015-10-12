@@ -1,6 +1,7 @@
 #ifndef SPECC_H
 #define SPECC_H
 
+#include <stddef.h>
 #include <setjmp.h>
 
 /**
@@ -29,8 +30,12 @@ typedef void (*specc_AfterFunc)(specc_Context *cxt);
 typedef struct specc_DescStack {
   const char *target; /// Name of `describe'
   int target_len; /// length of `target'
-  specc_BeforeFunc before_func; /// `before' function for this block (or NULL)
-  specc_AfterFunc after_func; /// `after' function for this block (or NULL)
+  specc_BeforeFunc *before_funcs; /// Registered `before' functions
+  size_t before_funcs_size; /// Size of before_funcs
+  size_t before_func_count; /// Count of registered `before' functions
+  specc_AfterFunc *after_funcs; /// Registered `before' functions
+  size_t after_funcs_size; /// Size of after_funcs
+  size_t after_func_count; /// Count of registered `after' functions
 } specc_DescStack;
 
 /**
