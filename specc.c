@@ -9,13 +9,47 @@
 #include "specc.h"
 #include "specc_util.h"
 
+sigjmp_buf specc_jmpbuf;
+
+/**
+ * Signal handler for sigaction
+ * @param signum [description]
+ */
 static void specc_signal_hander(int signum);
+
+/**
+ * Produce full name of current example
+ * @param  cxt
+ * @return     String of full name (This string needs to be freed at end)
+ */
 static const char *specc_full_example_name(specc_Context *cxt);
+
+/**
+ * Store failure of example to context
+ * @param cxt
+ * @param type Type of failure (Normal error or fixed pending example)
+ * @param msg  Failure message
+ */
 static void specc_add_failure(specc_Context *cxt, specc_FailureType type, const char *msg);
+
+/**
+ * Store failure by fixed pending example to context
+ * @param cxt
+ * @param msg Failure message
+ */
 static void specc_add_pending(specc_Context *cxt, const char *msg);
+
+/**
+ * Report test result to console
+ * @param cxt
+ */
 static void specc_report(specc_Context *cxt);
 
-sigjmp_buf specc_jmpbuf;
+/**
+ * Free used memory blocks in context
+ * @param cxt
+ */
+static void specc_cleanup_context(specc_Context *cxt);
 
 int specc_init_desc(specc_Context *cxt, const char *target, const char *filename, int line) {
   if (cxt->example != NULL) {
