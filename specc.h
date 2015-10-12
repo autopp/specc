@@ -3,12 +3,24 @@
 
 #include <setjmp.h>
 
+/**
+ * Version string of SpecC
+ */
 #define specc_VERSION "0.2.0"
 
 struct specc_Context;
 typedef struct specc_Context specc_Context;
 
+/**
+ * Type of `before' function
+ * @param  cxt
+ */
 typedef void (*specc_BeforeFunc)(specc_Context *cxt);
+
+/**
+ * Type of `after' function
+ * @param  cxt
+ */
 typedef void (*specc_AfterFunc)(specc_Context *cxt);
 
 /**
