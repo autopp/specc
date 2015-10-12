@@ -3,7 +3,7 @@
 
 #include <setjmp.h>
 
-#define specc_VERSION "0.1.0"
+#define specc_VERSION "0.2.0"
 
 struct specc_Context;
 typedef struct specc_Context specc_Context;
@@ -80,11 +80,10 @@ struct specc_Context {
   double start_time; /// Start time second of test
 };
 
-#ifndef SPECC_CONTXT_NAME
-#define SPECC_CONTXT_NAME specc_cxt
-#endif
-
-#define specc_cxt SPECC_CONTXT_NAME
+/**
+ * Global buffer for sigsetjmp/siglongjmp that SpecC use
+ */
+extern sigjmp_buf specc_jmpbuf;
 
 /**
  * Initialize `describe' block
@@ -141,11 +140,6 @@ int specc_finish_example(specc_Context *cxt);
  * @param signum Signal number of causes (If <= 0, Signal is not cause)
  */
 void specc_fail_example(specc_Context *cxt, int signum);
-
-/**
- * Global buffer for sigsetjmp/siglongjmp that SpecC use
- */
-extern sigjmp_buf specc_jmpbuf;
 
 /**
  * Initilize specc_jmpbuf
@@ -235,12 +229,12 @@ void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *fil
 /**
  * Setup SpecC (Called once)
  */
-void specc_setup(specc_Context *);
+void specc_setup(specc_Context *specc_cxt);
 
 /**
  * Teardown SpecC (Called once)
  */
-int specc_teardown(specc_Context *);
+int specc_teardown(specc_Context *specc_cxt);
 
 /**
  * Main function
