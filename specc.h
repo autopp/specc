@@ -1,7 +1,16 @@
 #ifndef SPECC_H
 #define SPECC_H
 
+#include <stddef.h>
 #include <setjmp.h>
+
+/**
+ * INTERNAL: Concat token x and y
+ * @param  x
+ * @param  y
+ */
+#define specc_concat_tokens(x, y) specc_concat_tokens_actually(x, y)
+#define specc_concat_tokens_actually(x, y) x ## y
 
 /**
  * Version string of SpecC
@@ -29,8 +38,12 @@ typedef void (*specc_AfterFunc)(specc_Context *cxt);
 typedef struct specc_DescStack {
   const char *target; /// Name of `describe'
   int target_len; /// length of `target'
-  specc_BeforeFunc before_func; /// `before' function for this block (or NULL)
-  specc_AfterFunc after_func; /// `after' function for this block (or NULL)
+  specc_BeforeFunc *before_funcs; /// Registered `before' functions
+  size_t before_funcs_size; /// Size of before_funcs
+  size_t before_func_count; /// Count of registered `before' functions
+  specc_AfterFunc *after_funcs; /// Registered `before' functions
+  size_t after_funcs_size; /// Size of after_funcs
+  size_t after_func_count; /// Count of registered `after' functions
 } specc_DescStack;
 
 /**
@@ -213,13 +226,15 @@ void specc_pending(specc_Context *cxt, const char *reason, const char *filename,
  */
 void specc_store_before(specc_Context *cxt, specc_BeforeFunc func, const char *filename, int line);
 
+#define specc_before_with_name(specc_before_name)\
+  auto void specc_before_name(specc_Context *cxt);\
+  specc_store_before(specc_cxt, specc_before_name, __FILE__, __LINE__);\
+  void specc_before_name(specc_Context *cxt)
+
 /**
  * Entry of `before' block
  */
-#define before\
-  auto void specc_before(specc_Context *cxt);\
-  specc_store_before(specc_cxt, specc_before, __FILE__, __LINE__);\
-  void specc_before(specc_Context *cxt)
+#define before specc_before_with_name(specc_concat_tokens(specc_before, __COUNTER__))
 
 /**
  * Store declarated `after' function to context
@@ -233,10 +248,12 @@ void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *fil
 /**
  * Entry of `after' block
  */
-#define after\
-  auto void specc_after(specc_Context *cxt);\
-  specc_store_after(specc_cxt, specc_after, __FILE__, __LINE__);\
-  void specc_after(specc_Context *cxt)
+#define specc_after_with_name(specc_after_name)\
+  auto void specc_after_name(specc_Context *cxt);\
+  specc_store_after(specc_cxt, specc_after_name, __FILE__, __LINE__);\
+  void specc_after_name(specc_Context *cxt)
+
+#define after specc_after_with_name(specc_concat_tokens(specc_after, __COUNTER__))
 
 /**
  * Setup SpecC (Called once)

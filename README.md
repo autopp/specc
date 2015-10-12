@@ -281,11 +281,10 @@ You get a output bellow:
 
 There are several limitations to `before`/`after`.
 
-  * One `before`/`after` block is allowed per `describe`.
-  * In a same `describe` scope, `before`/`after` block should be placed above the `it`.
+  * In a same `describe` scope, `before`/`after` blocks should be placed above the `it`.
 
-Note that other `before`/`after` block is allowed in a nested `describe`.
-(See `example/before_after_nested.c`)
+Multiple `before`/`after` is allowed in both same and nested scope.
+(See [`example/before_after_nested.c`](example/before_after_nested.c) and [`example/multiple_before_after.c`](example/multiple_before_after.c))
 
 ## TODO
 * More assert functions.

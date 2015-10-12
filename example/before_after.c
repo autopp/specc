@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct {
+typedef struct Person {
   const char *name;
   int age;
 } *Person;
 
 Person new_person(const char *name, int age) {
-  Person p = malloc(sizeof(Person));
+  Person p = malloc(sizeof(struct Person));
 
   p->name = name;
   p->age = age;

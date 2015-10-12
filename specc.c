@@ -9,7 +9,17 @@
 #include "specc.h"
 #include "specc_util.h"
 
-sigjmp_buf specc_jmpbuf;
+#define specc_current_desc(cxt) ((cxt)->desc_stack + (cxt)->desc_ptr)
+
+/**
+ * Default size of cxt->desc_stack[i].before_funcs_size
+ */
+#define INITIAL_BEFORE_FUNCS_SIZE 10
+
+/**
+ * Default size of cxt->desc_stack[i].after_funcs_size
+ */
+#define INITIAL_AFTER_FUNCS_SIZE 10
 
 /**
  * Signal handler for sigaction
@@ -40,6 +50,21 @@ static void specc_add_failure(specc_Context *cxt, specc_FailureType type, const 
 static void specc_add_pending(specc_Context *cxt, const char *msg);
 
 /**
+ * Default size of cxt->desc_stack
+ */
+#define INITIAL_DESC_STACK_SIZE 10
+
+/**
+ * Default size of cxt->failures
+ */
+#define INITIAL_FAILURES_SIZE 10
+
+/**
+ * Default size of cxt->pendigns
+ */
+#define INITIAL_PENDINGS_SIZE 10
+
+/**
  * Report test result to console
  * @param cxt
  */
@@ -50,6 +75,8 @@ static void specc_report(specc_Context *cxt);
  * @param cxt
  */
 static void specc_cleanup_context(specc_Context *cxt);
+
+sigjmp_buf specc_jmpbuf;
 
 int specc_init_desc(specc_Context *cxt, const char *target, const char *filename, int line) {
   if (cxt->example != NULL) {
@@ -75,10 +102,24 @@ int specc_init_desc(specc_Context *cxt, const char *target, const char *filename
     cxt->desc_size = new_size;
   }
 
-  cxt->desc_stack[cxt->desc_ptr].target = target;
-  cxt->desc_stack[cxt->desc_ptr].target_len = strlen(target);
-  cxt->desc_stack[cxt->desc_ptr].before_func = NULL;
-  cxt->desc_stack[cxt->desc_ptr].after_func = NULL;
+  specc_DescStack *desc = specc_current_desc(cxt);
+
+  desc->target = target;
+  desc->target_len = strlen(target);
+
+  desc->before_funcs_size = INITIAL_BEFORE_FUNCS_SIZE;
+  desc->before_funcs = malloc(sizeof(specc_BeforeFunc) * desc->before_funcs_size);
+  if (desc->before_funcs == NULL) {
+    specc_internal_error("cannot allocate memory for `before'");
+  }
+  desc->before_func_count = 0;
+
+  desc->after_funcs_size = INITIAL_AFTER_FUNCS_SIZE;
+  desc->after_funcs = malloc(sizeof(specc_AfterFunc) * desc->after_funcs_size);
+  if (desc->after_funcs == NULL) {
+    specc_internal_error("cannot allocate memory for `after'");
+  }
+  desc->after_func_count = 0;
 
   specc_printfln_indented(cxt->desc_ptr * 2, "%s", target);
 
@@ -86,6 +127,10 @@ int specc_init_desc(specc_Context *cxt, const char *target, const char *filename
 }
 
 int specc_finish_desc(specc_Context *cxt) {
+  specc_DescStack *cur_desc = specc_current_desc(cxt);
+  free(cur_desc->before_funcs);
+  free(cur_desc->after_funcs);
+
   cxt->desc_ptr--;
   return 1;
 }
@@ -106,10 +151,10 @@ int specc_init_example(specc_Context *cxt, const char *name, const char *filenam
 
   // call all stored `before'
   for (int i = 0; i <= cxt->desc_ptr; i++) {
-    specc_BeforeFunc func = cxt->desc_stack[i].before_func;
+    specc_DescStack *desc = cxt->desc_stack + i;
 
-    if (func != NULL) {
-      func(cxt);
+    for (int j = 0; j < desc->before_func_count; j++) {
+      desc->before_funcs[j](cxt);
     }
   }
 
@@ -120,10 +165,10 @@ int specc_finish_example(specc_Context *cxt)
 {
   // call all stored `after'
   for (int i = cxt->desc_ptr; i >= 0; i--) {
-    specc_AfterFunc func = cxt->desc_stack[i].after_func;
+    specc_DescStack *desc = cxt->desc_stack + i;
 
-    if (func != NULL) {
-      func(cxt);
+    for (int j = desc->after_func_count - 1; j >= 0; j--) {
+      desc->after_funcs[j](cxt);
     }
   }
 
@@ -308,7 +353,26 @@ void specc_store_before(specc_Context *cxt, specc_BeforeFunc func, const char *f
     specc_syntax_error(filename, line, "cannot use `before' at inside of `it'");
   }
 
-  cxt->desc_stack[cxt->desc_ptr].before_func = func;
+  specc_DescStack *cur_desc = specc_current_desc(cxt);
+
+  if (cur_desc->before_func_count == cur_desc->before_funcs_size - 1) {
+    // Expand before_funcs
+    int new_size = cur_desc->before_funcs_size * 2;
+
+    if (new_size <= cur_desc->before_funcs_size) {
+      specc_internal_error("cannot expand array for `before'");
+    }
+
+    specc_BeforeFunc *new_before_funcs = realloc(cur_desc->before_funcs, sizeof(specc_BeforeFunc) * new_size);
+    if (new_before_funcs == NULL) {
+      specc_internal_error("cannot expand array for `before'");
+    }
+
+    cur_desc->before_funcs_size = new_size;
+    cur_desc->before_funcs = new_before_funcs;
+  }
+
+  cur_desc->before_funcs[cur_desc->before_func_count++] = func;
 }
 
 void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *filename, int line) {
@@ -320,12 +384,28 @@ void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *fil
     specc_syntax_error(filename, line, "cannot use `after' at inside of `it'");
   }
 
-  cxt->desc_stack[cxt->desc_ptr].after_func = func;
+  specc_DescStack *cur_desc = specc_current_desc(cxt);
+
+  if (cur_desc->after_func_count == cur_desc->after_funcs_size - 1) {
+    // Expand after_funcs
+    int new_size = cur_desc->after_funcs_size * 2;
+
+    if (new_size <= cur_desc->after_funcs_size) {
+      specc_internal_error("cannot expand array for `after'");
+    }
+
+    specc_AfterFunc *new_after_funcs = realloc(cur_desc->after_funcs, sizeof(specc_AfterFunc) * new_size);
+    if (new_after_funcs == NULL) {
+      specc_internal_error("cannot expand array for `after'");
+    }
+
+    cur_desc->after_funcs_size = new_size;
+    cur_desc->after_funcs = new_after_funcs;
+  }
+
+  cur_desc->after_funcs[cur_desc->after_func_count++] = func;
 }
 
-#define INITIAL_DESC_STACK_SIZE 10
-#define INITIAL_FAILURES_SIZE 10
-#define INITIAL_PENDINGS_SIZE 10
 void specc_setup(specc_Context *cxt){
   // initialize member of cxt
   cxt->desc_stack = calloc(sizeof(struct specc_DescStack), INITIAL_DESC_STACK_SIZE);
