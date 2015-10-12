@@ -9,13 +9,19 @@ typedef struct {
 } Point;
 
 double distance(Point *p, Point *q) {
-  return hypot(p->x - q->x, p->y - q->y);;
+  return hypot(p->x - q->x, p->y - q->y);
 }
 
 specc {
-  describe ("distance") {
-    context ("with (7, 10) and (3, 14)") {
+  describe ("distance()") {
+    context ("with (7, 10) and (3, 13)") {
       Point *p, *q;
+
+      /*
+       * Execution order: (A) -> (B) -> (E) -> (D) -> (C)
+       */
+
+      /* (A) */
       before {
         if ((p = malloc(sizeof(Point))) != NULL) {
           p->x = 7;
@@ -23,6 +29,7 @@ specc {
         }
       }
 
+      /* (B) */
       before {
         if ((q = malloc(sizeof(Point))) != NULL) {
           q->x = 3;
@@ -30,18 +37,21 @@ specc {
         }
       }
 
+      /* (C) */
       after {
         if (p != NULL) {
           free(p);
         }
       }
 
+      /* (D) */
       after {
         if (q != NULL) {
           free(q);
         }
       }
 
+      /* (E) */
       it ("returns 5") {
         expect_that(distance(p, q) == 5);
       }
