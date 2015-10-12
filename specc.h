@@ -15,7 +15,7 @@
 /**
  * Version string of SpecC
  */
-#define specc_VERSION "0.2.0"
+#define specc_VERSION "0.3.0"
 
 struct specc_Context;
 typedef struct specc_Context specc_Context;
