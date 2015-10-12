@@ -217,7 +217,7 @@ static void specc_add_pending(specc_Context *cxt, const char *msg) {
   cxt->pending_count++;
 }
 
-void specc_failure_example(specc_Context *cxt, int signum) {
+void specc_fail_example(specc_Context *cxt, int signum) {
   // switch failure flag
   cxt->example_failed = 1;
 
