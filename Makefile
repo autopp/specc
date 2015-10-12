@@ -1,7 +1,7 @@
 CFLAGS=-Wall -pedantic -Werror -fPIC --std=gnu99
 CC=gcc
 
-.PHONY=all clean test
+.PHONY=all clean test valgrind
 
 TARGET=libspecc.so
 
@@ -15,3 +15,6 @@ clean:
 
 test: all
 	@./run_test.sh
+
+valgrind: all
+	@./run_valgrind.sh

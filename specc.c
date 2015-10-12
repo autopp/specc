@@ -127,6 +127,10 @@ int specc_init_desc(specc_Context *cxt, const char *target, const char *filename
 }
 
 int specc_finish_desc(specc_Context *cxt) {
+  specc_DescStack *cur_desc = specc_current_desc(cxt);
+  free(cur_desc->before_funcs);
+  free(cur_desc->after_funcs);
+
   cxt->desc_ptr--;
   return 1;
 }
