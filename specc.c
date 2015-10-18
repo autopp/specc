@@ -9,8 +9,6 @@
 #include "specc.h"
 #include "specc_util.h"
 
-specc_Context specc_cxt;
-
 #define specc_current_desc(cxt) ((cxt)->desc_stack + (cxt)->desc_ptr)
 
 /**

@@ -106,11 +106,6 @@ struct specc_Context {
 };
 
 /**
- * Global context for SpecC
- */
-extern specc_Context specc_cxt;
-
-/**
  * Global buffer for sigsetjmp/siglongjmp that SpecC use
  */
 extern sigjmp_buf specc_jmpbuf;
@@ -281,6 +276,7 @@ void specc_main(specc_Context *specc_cxt);
  */
 #define specc\
   int main(void) {\
+    specc_Context specc_cxt;\
     specc_setup(&specc_cxt);\
     specc_main(&specc_cxt);\
     return specc_teardown(&specc_cxt);\
