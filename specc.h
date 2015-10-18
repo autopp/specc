@@ -106,6 +106,11 @@ struct specc_Context {
 };
 
 /**
+ * Global context for SpecC
+ */
+extern specc_Context specc_cxt;
+
+/**
  * Global buffer for sigsetjmp/siglongjmp that SpecC use
  */
 extern sigjmp_buf specc_jmpbuf;
@@ -245,14 +250,14 @@ void specc_store_before(specc_Context *cxt, specc_BeforeFunc func, const char *f
  */
 void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *filename, int line);
 
-/**
- * Entry of `after' block
- */
 #define specc_after_with_name(specc_after_name)\
   auto void specc_after_name(specc_Context *cxt);\
   specc_store_after(specc_cxt, specc_after_name, __FILE__, __LINE__);\
   void specc_after_name(specc_Context *cxt)
 
+/**
+ * Entry of `after' block
+ */
 #define after specc_after_with_name(specc_concat_tokens(specc_after, __COUNTER__))
 
 /**
@@ -276,10 +281,9 @@ void specc_main(specc_Context *specc_cxt);
  */
 #define specc\
   int main(void) {\
-    specc_Context cxt;\
-    specc_setup(&cxt);\
-    specc_main(&cxt);\
-    return specc_teardown(&cxt);\
+    specc_setup(&specc_cxt);\
+    specc_main(&specc_cxt);\
+    return specc_teardown(&specc_cxt);\
   }\
   \
   void specc_main(specc_Context *specc_cxt)
