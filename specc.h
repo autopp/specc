@@ -4,13 +4,7 @@
 #include <stddef.h>
 #include <setjmp.h>
 
-/**
- * INTERNAL: Concat token x and y
- * @param  x
- * @param  y
- */
-#define specc_concat_tokens(x, y) specc_concat_tokens_actually(x, y)
-#define specc_concat_tokens_actually(x, y) x ## y
+#include "specc_macro_util.h"
 
 /**
  * Version string of SpecC
@@ -234,7 +228,7 @@ void specc_store_before(specc_Context *cxt, specc_BeforeFunc func, const char *f
 /**
  * Entry of `before' block
  */
-#define before specc_before_with_name(specc_concat_tokens(specc_before, __COUNTER__))
+#define before specc_before_with_name(specc_concat_token(specc_before, __COUNTER__))
 
 /**
  * Store declarated `after' function to context
@@ -253,7 +247,24 @@ void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *fil
 /**
  * Entry of `after' block
  */
-#define after specc_after_with_name(specc_concat_tokens(specc_after, __COUNTER__))
+#define after specc_after_with_name(specc_concat_token(specc_after, __COUNTER__))
+
+#define specc_matcher_name(name) specc_concat_token(specc_matcher_, name)
+
+/**
+ * Define matcher function
+ * @param  name        Name of matcher
+ * @param  actual_decl Declaration of actual value
+ */
+#define define_matcher(name, actual_decl, ...)\
+  int specc_matcher_name(name)(actual_decl, #__VA_ARGS__)
+
+#define specc_decl_matchers(...) specc_dispatch_
+
+#define import_matchers(...)\
+  struct specc_MatcherSet {\
+    specc_decl_matchers(__VA_ARGS__)\
+  } specc_matchers\
 
 /**
  * Setup SpecC (Called once)
