@@ -100,6 +100,11 @@ struct specc_Context {
 };
 
 /**
+ * Global context of SpecC
+ */
+extern specc_Context *specc_cxt;
+
+/**
  * Global buffer for sigsetjmp/siglongjmp that SpecC use
  */
 extern sigjmp_buf specc_jmpbuf;
@@ -276,30 +281,29 @@ void specc_expect_to(specc_Context *cxt, int expected, int evaluated);
 /**
  * Setup SpecC (Called once)
  */
-void specc_setup(specc_Context *specc_cxt);
+void specc_setup();
 
 /**
  * Teardown SpecC (Called once)
  */
-int specc_teardown(specc_Context *specc_cxt);
+int specc_teardown();
 
 /**
  * Main function
  * @param specc_cxt
  */
-void specc_main(specc_Context *specc_cxt);
+void specc_main();
 
 /**
  * Main entry of test code
  */
 #define specc\
   int main(void) {\
-    specc_Context specc_cxt;\
-    specc_setup(&specc_cxt);\
-    specc_main(&specc_cxt);\
-    return specc_teardown(&specc_cxt);\
+    specc_setup();\
+    specc_main();\
+    return specc_teardown();\
   }\
   \
-  void specc_main(specc_Context *specc_cxt)
+  void specc_main()
 
 #endif

@@ -9,6 +9,9 @@
 #include "specc.h"
 #include "specc_util.h"
 
+static specc_Context specc_cxt_body;
+specc_Context *specc_cxt = &specc_cxt_body;
+
 #define specc_current_desc(cxt) ((cxt)->desc_stack + (cxt)->desc_ptr)
 
 /**
@@ -414,41 +417,41 @@ void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *fil
   cur_desc->after_funcs[cur_desc->after_func_count++] = func;
 }
 
-void specc_setup(specc_Context *cxt){
+void specc_setup(){
   // initialize member of cxt
-  cxt->desc_stack = calloc(sizeof(struct specc_DescStack), INITIAL_DESC_STACK_SIZE);
-  cxt->desc_ptr = -1;
-  cxt->desc_size = INITIAL_DESC_STACK_SIZE;
+  specc_cxt->desc_stack = calloc(sizeof(struct specc_DescStack), INITIAL_DESC_STACK_SIZE);
+  specc_cxt->desc_ptr = -1;
+  specc_cxt->desc_size = INITIAL_DESC_STACK_SIZE;
 
-  if (cxt->desc_stack == NULL ) {
+  if (specc_cxt->desc_stack == NULL ) {
     specc_internal_error("cannot allocate memory");
   }
 
-  cxt->example = NULL;
-  cxt->example_count = 0;
+  specc_cxt->example = NULL;
+  specc_cxt->example_count = 0;
 
-  cxt->failures = calloc(sizeof(struct specc_Failure), INITIAL_FAILURES_SIZE);
-  cxt->failures_size = INITIAL_FAILURES_SIZE;
-  cxt->failure_count = 0;
+  specc_cxt->failures = calloc(sizeof(struct specc_Failure), INITIAL_FAILURES_SIZE);
+  specc_cxt->failures_size = INITIAL_FAILURES_SIZE;
+  specc_cxt->failure_count = 0;
 
-  if (cxt->failures == NULL) {
+  if (specc_cxt->failures == NULL) {
     specc_internal_error("cannot allocate memory");
   }
 
-  cxt->pendings = calloc(sizeof(struct specc_Pending), INITIAL_PENDINGS_SIZE);
-  cxt->pendings_size = INITIAL_PENDINGS_SIZE;
-  cxt->pending_count = 0;
+  specc_cxt->pendings = calloc(sizeof(struct specc_Pending), INITIAL_PENDINGS_SIZE);
+  specc_cxt->pendings_size = INITIAL_PENDINGS_SIZE;
+  specc_cxt->pending_count = 0;
 
-  if (cxt->pendings == NULL) {
+  if (specc_cxt->pendings == NULL) {
     specc_internal_error("cannot allocate memory");
   }
 
-  cxt->recent_failure_msg = NULL;
+  specc_cxt->recent_failure_msg = NULL;
 
   specc_newline();
 
   // mesure start time of test
-  cxt->start_time = specc_get_time();
+  specc_cxt->start_time = specc_get_time();
 }
 
 static void specc_report(specc_Context *cxt) {
@@ -558,9 +561,9 @@ static void specc_cleanup_context(specc_Context *cxt) {
   free(cxt->pendings);
 }
 
-int specc_teardown(specc_Context *cxt){
-  specc_report(cxt);
-  specc_cleanup_context(cxt);
+int specc_teardown(){
+  specc_report(specc_cxt);
+  specc_cleanup_context(specc_cxt);
 
-  return cxt->failure_count != 0;
+  return specc_cxt->failure_count != 0;
 }
