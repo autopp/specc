@@ -322,7 +322,7 @@ void specc_fail_example(specc_Context *cxt, int signum) {
   }
 }
 
-/* expect */
+/* expect_that */
 void specc_expect_that(specc_Context *cxt, const char *expr_str, int val, const char *filename, int line) {
   if (cxt->example == NULL) {
     specc_syntax_error(filename, line, "cannot use `expect_that` at outside of `it'");
@@ -330,6 +330,14 @@ void specc_expect_that(specc_Context *cxt, const char *expr_str, int val, const 
 
   if (!val) {
     cxt->recent_failure_msg = specc_saprintf("The condition `%s' failed", expr_str);
+
+    siglongjmp(specc_jmpbuf, -1);
+  }
+}
+
+void specc_expect_to(specc_Context *cxt, int expected, int evaluated) {
+  if (expected != !!evaluated) {
+    cxt->recent_failure_msg = specc_saprintf("Expectaion is violated!");
 
     siglongjmp(specc_jmpbuf, -1);
   }

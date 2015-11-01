@@ -249,7 +249,10 @@ void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *fil
  */
 #define after specc_after_with_name(specc_concat_token(specc_after, __COUNTER__))
 
-#define specc_matcher_name(name) specc_concat_token(specc_matcher_, name)
+typedef void (*specc_FailureMsgFunc)(const char *fmt, ...);
+
+#define specc_IMPLICIT_MATCHER_PARAMS\
+  specc_FailureMsgFunc failure_msg, specc_FailureMsgFunc failure_msg_when_negated
 
 /**
  * Define matcher function
@@ -257,14 +260,18 @@ void specc_store_after(specc_Context *cxt, specc_AfterFunc func, const char *fil
  * @param  actual_decl Declaration of actual value
  */
 #define define_matcher(name, actual_decl, ...)\
-  int specc_matcher_name(name)(actual_decl, #__VA_ARGS__)
+  int name(specc_IMPLICIT_MATCHER_PARAMS, actual_decl, ##__VA_ARGS__)
 
-#define specc_decl_matchers(...) specc_dispatch_
+#define expect_to(actual, matcher, ...)\
+  specc_expect(1, (actual), (matcher), ##__VA_ARGS__)
 
-#define import_matchers(...)\
-  struct specc_MatcherSet {\
-    specc_decl_matchers(__VA_ARGS__)\
-  } specc_matchers\
+#define expect_not_to(actual, matcher, ...)\
+  specc_expect(0, (actual), (matcher), ##__VA_ARGS__)
+
+#define specc_expect(expected, actual, matcher, ...)\
+  (specc_expect_to(specc_cxt, (expected), (matcher)(NULL, NULL, actual, ##__VA_ARGS__)))
+
+void specc_expect_to(specc_Context *cxt, int expected, int evaluated);
 
 /**
  * Setup SpecC (Called once)

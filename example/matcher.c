@@ -1,11 +1,20 @@
 #include <specc.h>
+#include <stdio.h>
+#include <string.h>
+
+define_matcher(eq_int, int actual, int expected) {
+  return actual == expected;
+}
+
+define_matcher(eq_str, const char *actual, const char *expected) {
+  return strcmp(actual, expected) == 0;
+}
 
 specc {
-  import_builtin_matchers;
 
   describe ("41 + 1") {
     it ("evaluates to 42") {
-      expect_not_to.eq_int(41 + 1, 42);
+      expect_not_to(41 + 1, eq_int, 42);
     }
   }
 
@@ -13,8 +22,7 @@ specc {
     it ("should be \"042\"") {
       char buf[32];
       sprintf(buf, "%03d", 42);
-      expect_to.eq_str(buf, "042");
-      expect
+      expect_to(buf, eq_str, "042");
     }
   }
 }
