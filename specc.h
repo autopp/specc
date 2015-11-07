@@ -4,7 +4,8 @@
 #include <stddef.h>
 #include <setjmp.h>
 
-#include "specc_macro_util.h"
+#include "ct_util.h"
+#include "internal.h"
 
 /**
  * Version string of SpecC
@@ -266,6 +267,9 @@ typedef void (*specc_FailureMsgFunc)(const char *fmt, ...);
  */
 #define define_matcher(name, actual_decl, ...)\
   int name(specc_IMPLICIT_MATCHER_PARAMS, actual_decl, ##__VA_ARGS__)
+
+void specc_set_failure_msg(const char *fmt, ...);
+void specc_set_failure_msg_when_negated(const char *fmt, ...);
 
 #define expect_to(actual, matcher, ...)\
   specc_expect(1, (actual), (matcher), ##__VA_ARGS__)

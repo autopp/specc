@@ -1,17 +1,27 @@
-CFLAGS=-Wall -pedantic -Werror -fPIC --std=gnu99
+CFLAGS=-Wall -pedantic -Werror -fPIC --std=gnu99 -c -MMD -MP
+LDFLAGS=-shared
 CC=gcc
 
 .PHONY=all clean test valgrind
 
 TARGET=libspecc.so
+SRCS=specc.c rt_util.c before_after.c internal.c
+OBJS=$(SRCS:%.c=%.o)
+DEPDIR=dep
+DEPS=$(SRCS:%.c=%.d)
 
-all: $(TARGET)
+$(TARGET): $(OBJS)
+	$(CC) $(LDFLAGS) $^ -o $@ 2>&1
 
-$(TARGET): specc.c specc.h specc_util.c specc_util.h
-	$(CC) -shared $(CFLAGS) specc.c specc_util.c -o $@ 2>&1
+-include  $(DEPS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) $<
+
+all: clean $(TARGET)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(OBJS) $(DEPS)
 
 test: all
 	@./run_test.sh

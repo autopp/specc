@@ -6,6 +6,8 @@
 
 #include "specc_util.h"
 
+void specc_internal_error(const char *fmt, ...);
+
 /**
  * Escape sequences for each color
  */
@@ -22,33 +24,6 @@ double specc_get_time() {
   struct timeval tv;
   gettimeofday(&tv, NULL);
   return tv.tv_sec + tv.tv_usec * 1e-6;
-}
-
-void specc_internal_error(const char *fmt, ...) {
-  va_list vargs;
-  fprintf(stderr, "SpecC internal error: ");
-
-  va_start(vargs, fmt);
-  vfprintf(stderr, fmt, vargs);
-  va_end(vargs);
-
-  fprintf(stderr, "\n");
-
-  exit(1);
-}
-
-void specc_syntax_error(const char *filename, int line, const char *fmt, ...) {
-  va_list vargs;
-
-  specc_fcprintf_indented(stderr, specc_RED, 0, "SpecC Syntax Error at %s:%d: ", filename, line);
-
-  va_start(vargs, fmt);
-  vfprintf(stderr, fmt, vargs);
-  va_end(vargs);
-
-  fprintf(stderr, "\n");
-
-  exit(1);
 }
 
 void specc_fcprintf_indented(FILE *fp, specc_Color color, int level, const char *fmt, ...) {

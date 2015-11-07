@@ -11,20 +11,6 @@
 double specc_get_time();
 
 /**
- * Output formatted error message and exit program
- * @param fmt Printf style format string
- */
-void specc_internal_error(const char *fmt, ...);
-
-/**
- * Output syntax error message and exit program
- * @param filename File name syntax error has occurred
- * @param line     Line number syntax error has occurred
- * @param fmt      Printf style format string
- */
-void specc_syntax_error(const char *filename, int line, const char *fmt, ...);
-
-/**
  * Set of color ID
  */
 typedef enum specc_Color {
