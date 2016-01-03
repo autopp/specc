@@ -88,13 +88,23 @@ struct specc_Context {
   specc_Failure *failures; /// Array of occured failures
   int failures_size; /// Size of failures
   int failure_count; /// Count of falure
-  const char *recent_failure_msg;
+  const char *recent_failure_msg; // if not NULL, recent example failed
 
   // pending logs
   specc_Pending *pendings; /// Array of failed pending examples
   int pendings_size; /// size of pendings
   int pending_count; /// Count of failed pending examples
   const char *pending_reason; /// reason for current pending (if NULL, not pending)
+
+  // strings of expectation
+  const char *actual_expr;
+  const char *matcher_name;
+  int matcher_arg_count;
+  const char **matcher_arg_exprs;
+
+  // matcher's message buffer
+  const char *failure_msg;
+  const char *failure_msg_when_negated;
 
   // start time
   double start_time; /// Start time second of test
@@ -272,13 +282,24 @@ void specc_set_failure_msg(const char *fmt, ...);
 void specc_set_failure_msg_when_negated(const char *fmt, ...);
 
 #define expect_to(actual, matcher, ...)\
-  specc_expect(1, (actual), (matcher), ##__VA_ARGS__)
+  specc_expect(1, actual, matcher, ##__VA_ARGS__)
 
 #define expect_not_to(actual, matcher, ...)\
-  specc_expect(0, (actual), (matcher), ##__VA_ARGS__)
+  specc_expect(0, actual, matcher, ##__VA_ARGS__)
+
+int specc_init_expect(
+  specc_Context *cxt, const char *actual_expr, const char *matcher_name,
+  int matcher_arg_count, ...);
+int specc_finish_expect(specc_Context *cxt);
+
+#define specc_str_and_comma(x) specc_str_of(x),
 
 #define specc_expect(expected, actual, matcher, ...)\
-  (specc_expect_to(specc_cxt, (expected), (matcher)(NULL, NULL, actual, ##__VA_ARGS__)))
+  for (int specc_done = specc_init_expect(\
+      specc_cxt, specc_str_of(actual), specc_str_of(matcher),\
+      specc_sizeof_va_args(__VA_ARGS__), specc_map_macro(specc_str_and_comma, ##__VA_ARGS__) NULL);\
+    !specc_done; specc_done = specc_finish_expect(specc_cxt))\
+    specc_expect_to(specc_cxt, (expected), (matcher)(specc_set_failure_msg, specc_set_failure_msg_when_negated, actual, ##__VA_ARGS__))
 
 void specc_expect_to(specc_Context *cxt, int expected, int evaluated);
 

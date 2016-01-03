@@ -265,7 +265,6 @@ static void specc_add_failure(specc_Context *cxt, specc_FailureType type, const 
     cxt->failures = new_failures;
     cxt->failures_size = new_size;
   }
-
   cxt->failures[cxt->failure_count].type = type;
   cxt->failures[cxt->failure_count].full_name = specc_full_example_name(cxt);
   cxt->failures[cxt->failure_count].msg = msg;
@@ -316,6 +315,7 @@ void specc_fail_example(specc_Context *cxt, int signum) {
     }
   } else {
     msg = cxt->recent_failure_msg;
+    cxt->recent_failure_msg = NULL;
   }
 
   if (cxt->pending_reason == NULL) {
@@ -333,14 +333,6 @@ void specc_expect_that(specc_Context *cxt, const char *expr_str, int val, const 
 
   if (!val) {
     cxt->recent_failure_msg = specc_saprintf("The condition `%s' failed", expr_str);
-
-    siglongjmp(specc_jmpbuf, -1);
-  }
-}
-
-void specc_expect_to(specc_Context *cxt, int expected, int evaluated) {
-  if (expected != !!evaluated) {
-    cxt->recent_failure_msg = specc_saprintf("Expectaion is violated!");
 
     siglongjmp(specc_jmpbuf, -1);
   }
@@ -488,18 +480,15 @@ static void specc_report(specc_Context *cxt) {
 }
 
 static void specc_cleanup_context(specc_Context *cxt) {
-  int i;
-
   free(cxt->desc_stack);
-
-  for (i = 0; i < cxt->failure_count; i++) {
+  for (int i = 0; i < cxt->failure_count; i++) {
     specc_Failure *failure = cxt->failures + i;
     free((char *)failure->full_name);
     free((char *)failure->msg);
   }
   free(cxt->failures);
 
-  for (i = 0; i < cxt->pending_count; i++) {
+  for (int i = 0; i < cxt->pending_count; i++) {
     specc_Pending *p = cxt->pendings + i;
     free((char *)p->full_name);
     free((char *)p->msg);

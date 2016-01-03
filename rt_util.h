@@ -119,16 +119,4 @@ const char *specc_saprintf(const char *fmt, ...);
  */
 const char *specc_signal_name(int signum);
 
-/**
- * Count size of __VA_ARGS__ at preprocessing (MAX: 20)
- */
-#define specc_sizeof_VA_ARGS_sub(\
-  x1, x2, x3, x4, x5, x6, x7, x8, x9, x10,\
-  x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, size, ...) size
-
-#define specc_sizeof_VA_ARGS(...)\
-  specc_sizeof_VA_ARGS_sub(\
-    __VA_ARGS__, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11,\
-    10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
-
 #endif

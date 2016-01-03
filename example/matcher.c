@@ -11,10 +11,9 @@ define_matcher(eq_str, const char *actual, const char *expected) {
 }
 
 specc {
-
   describe ("41 + 1") {
     it ("evaluates to 42") {
-      expect_not_to(41 + 1, eq_int, 42);
+      expect_to(41 + 1, eq_int, 42);
     }
   }
 
